@@ -224,8 +224,6 @@ export const deleteUser = async (req, res) => {
         path.dirname("") + '/src' + user.picture
       );
 
-      // console.log("Unlinking file:", filePath); 
-
       if (fs.existsSync(filePath)) {
         try {
           await fs.promises.unlink(filePath); 
@@ -244,7 +242,6 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 export const login = async (req, res) => {
   const { email, password } = req.body;

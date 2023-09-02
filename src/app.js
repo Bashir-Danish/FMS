@@ -5,12 +5,12 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { config } from "dotenv";
 import { notFound, errorHandler } from "./middlewares.js";
+import departmentRouter from "./routes/departments.js";
 import {
   createConnections,
   getConnectionPool,
   connectionPool1,
 } from "./configs/connection.js";
-import departmentRouter from "./routes/departments.js";
 import semesterRouter from "./routes/semesters.js";
 import userRouter from "./routes/users.js";
 import studentRouter from "./routes/students.js";
@@ -89,9 +89,9 @@ app.get("/seed", async (req, res) => {
     // await req.connect.query("DROP TABLE IF EXISTS Semester");
     // await req.connect.query("DROP TABLE IF EXISTS Student");
     // await req.connect.query("DROP TABLE IF EXISTS User");
-    // await req.connect.query("DROP TABLE IF EXISTS Subject");
+    await req.connect.query("DROP TABLE IF EXISTS Subject");
     // await req.connect.query("DROP TABLE IF EXISTS Enrollment");
-    // await req.connect.query("DROP TABLE IF EXISTS Attendance");
+    // await req.connect.query("DROP TABLE IF EXISTS SemesterRegistration");
     await req.connect.query("SET FOREIGN_KEY_CHECKS = 1");
     console.log("All tables dropped successfully");
   } catch (error) {
