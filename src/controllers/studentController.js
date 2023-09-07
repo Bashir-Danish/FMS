@@ -8,7 +8,7 @@ export const getStudents = async (req, res) => {
         SELECT * FROM Student
       `;
     const [students] = await conn.query(query);
-
+    console.log(students);
     res.status(200).json({ students: students });
   } catch (error) {
     console.error("Error retrieving students:", error);
@@ -22,8 +22,9 @@ function generateUniqueFilename() {
   return `image_${timestamp}_${random}`;
 }
 export const createStudent = async (req, res) => {
-  const { name, fname, ssid, department_id } = req.body;
+  const { name, fname, ssid, department_id, current_semester } = req.body;
   const conn = req.connect;
+  console.log(req.body);
   let uploadPath;
   try {
     if (!req.files || Object.keys(req.files).length === 0) {
@@ -50,23 +51,32 @@ export const createStudent = async (req, res) => {
     const [students] = await conn.query(checkQuery, [ssid]);
 
     if (students.length > 0) {
-      console.log(ssid);
       return res
         .status(400)
         .json({ error: "محصل با این ایدی از قبل وجود دارد" });
     } else {
       let student_id;
-      let insertQuery = `
-        INSERT INTO Student ( name, fname, ssid, department_id,picture)
-        VALUES (?, ?, ?, ?,?)
-      `;
-      const [result] = await conn.query(insertQuery, [
-        name,
-        fname,
-        ssid,
-        department_id,
-        uploadPath,
-      ]);
+      let insertQuery;
+      if (parseFloat(current_semester) !== 0) {
+        insertQuery = `
+         INSERT INTO Student ( name, fname, ssid, department_id,current_semester,picture)
+         VALUES (?, ?, ?, ?,?,?)
+       `;
+       console.log('this')
+       console.log(parseFloat(current_semester))
+       console.log(department_id)
+      } else {
+        insertQuery = `
+         INSERT INTO Student ( name, fname, ssid, department_id,picture)
+         VALUES (?, ?, ?, ?,?)
+       `;
+      }
+      const [result] = await conn.query(
+        insertQuery,
+        current_semester
+          ? [name, fname, ssid, department_id, parseFloat(current_semester), uploadPath]
+          : [name, fname, ssid, department_id, uploadPath]
+      );
 
       student_id = result.insertId;
 
@@ -107,7 +117,7 @@ export const getStudentById = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   const { id } = req.params;
-  const { name, fname, ssid, department_id } = req.body;
+  const { name, fname, ssid, department_id, current_semester } = req.body;
   console.log(req.body);
   const conn = req.connect;
   let newFilePath = null;
@@ -165,12 +175,15 @@ export const updateStudent = async (req, res) => {
           ? parseFloat(department_id)
           : student.department_id,
       picture: newFilePath !== null ? newFilePath : student.picture,
-      current_semester: student.current_semester,
+      current_semester:
+        !isNaN(parseFloat(current_semester)) !== undefined
+          ? parseFloat(current_semester)
+          : student.current_semester,
     };
 
     const updateQuery = `
       UPDATE Student
-      SET name = ?, fname = ?, ssid = ?,  department_id = ? ,picture = ?
+      SET name = ?, fname = ?, ssid = ?,  department_id = ? ,picture = ? ,current_semester =?
       WHERE student_id = ?
     `;
     await conn.query(updateQuery, [
@@ -179,6 +192,7 @@ export const updateStudent = async (req, res) => {
       updatedFields.ssid,
       updatedFields.department_id,
       updatedFields.picture,
+      updatedFields.current_semester,
       id,
     ]);
 

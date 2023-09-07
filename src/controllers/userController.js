@@ -12,7 +12,7 @@ export const getAllUsers = async (req, res) => {
     FROM User;
     `;
     const [users] = await conn.query(query);
-    // console.log(users);
+
 
     res.status(200).json({ users: users });
   } catch (error) {
@@ -30,7 +30,7 @@ export const createUser = async (req, res) => {
   const { name, lastName, email, password, userType } = req.body;
   const conn = req.connect;
   let uploadPath;
-  console.log(req.files.file)
+  console.log(req.files.file);
   try {
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).send({ error: "فایل آپلود نشد" });
@@ -72,7 +72,9 @@ export const createUser = async (req, res) => {
         INSERT INTO User (name, lastName, email, password,picture)
         VALUES (?, ?, ?, ?,?)
       `;
-        const [result] = await conn.query(insertQuery, [name,lastName,
+        const [result] = await conn.query(insertQuery, [
+          name,
+          lastName,
           email,
           hashedPassword,
           uploadPath,
@@ -159,12 +161,11 @@ export const updateUser = async (req, res) => {
     }
 
     let hashedPassword;
-    if (password !== 'undefined' && password !== "") {
+    if (password !== "undefined" && password !== "") {
       hashedPassword = await bcrypt.hash(password, 10);
     } else {
       hashedPassword = user.password;
     }
-    
 
     const updatedFields = {
       name: name !== undefined ? name : user.name,
@@ -190,7 +191,9 @@ export const updateUser = async (req, res) => {
       id,
     ]);
 
-    res.status(200).json({ user: updatedFields,message: "کاربر موفقانه ویرایش شد" });
+    res
+      .status(200)
+      .json({ user: updatedFields, message: "کاربر موفقانه ویرایش شد" });
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -210,24 +213,22 @@ export const deleteUser = async (req, res) => {
     if (users.length === 0) {
       return res.status(400).json({ error: "کاربر یافت نشد" });
     }
-    
+
     const user = users[0];
-    
+
     const deleteQuery = `
       DELETE FROM User WHERE user_id = ?
     `;
-    
+
     await conn.query(deleteQuery, [id]);
 
     if (user.picture) {
-      const filePath = path.resolve(
-        path.dirname("") + '/src' + user.picture
-      );
+      const filePath = path.resolve(path.dirname("") + "/src" + user.picture);
 
       if (fs.existsSync(filePath)) {
         try {
-          await fs.promises.unlink(filePath); 
-          // console.log("File unlinked successfully"); 
+          await fs.promises.unlink(filePath);
+          // console.log("File unlinked successfully");
         } catch (error) {
           console.error("Error unlinking user image:", error);
         }
@@ -244,7 +245,7 @@ export const deleteUser = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
   const conn = req.connect;
 
   try {
@@ -260,18 +261,32 @@ export const login = async (req, res) => {
     const user = users[0];
 
     const isPassMatch = await bcrypt.compare(password, user.password);
-    console.log(isPassMatch);
-    console.log(isPassMatch);
+
     if (!isPassMatch) {
       return res.status(401).json({ error: "Invalid password" });
     }
-
-    const token = jwt.sign(
-      { userId: user.instructor_id },
-      process.env.SECRET_KEY
+    const accessToken = jwt.sign(
+      { userId: user.user_id },
+      process.env.SECRET_KEY,
+      { expiresIn: "1m" }
     );
 
-    res.json({ token });
+    const refreshToken = jwt.sign(
+      { userId: user.user_id },
+      process.env.SECRET_KEY,
+      { expiresIn: remember ? "20d" : "5d" }
+    );
+    await conn.query("UPDATE User SET refreshToken = ? WHERE user_id = ?", [
+      refreshToken,
+      user.user_id,
+    ]);
+    res.cookie("access_token", accessToken, {
+      // secure: true,
+      // httpOnly: true,
+      sameSite: "strict",
+    });
+
+    res.status(200).json({ message: "success" });
   } catch (error) {
     console.error("Error logging in user:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -307,8 +322,7 @@ export const getUserById = async (req, res) => {
 
 //     // author: 'f7a69df7a69f6af6afd9a',
 //     // picture: '/path/to/',
-//     // categories: ['f7a69df7a69f6af6afd9a', 'f7a69df7a69f6af6afd9a'] 
-  
+//     // categories: ['f7a69df7a69f6af6afd9a', 'f7a69df7a69f6af6afd9a']
 
 //   try {
 //     // Check if the author exists // بری محکم کاری یه😂😂

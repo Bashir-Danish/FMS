@@ -1,10 +1,18 @@
 import { createConnectionPool } from "./dbConfig.js";
+import { config } from "dotenv";
+config();
 
+// const dbConfig1 = {
+//   host: process.env.DB_HOST_1 || "190.92.190.16",
+//   user: process.env.DB_USER_1 || "dos",
+//   password: process.env.DB_PASSWORD_1 || "dos1234",
+//   database: process.env.DB_NAME_ || "Fms1",
+// };
 const dbConfig1 = {
-  host: process.env.DB_HOST || "192.168.172.1",
-  user: process.env.DB_USER || "dos",
-  password: process.env.DB_PASSWORD || "dos1234",
-  database: process.env.DB_NAME || "FMS1",
+  host: process.env.DB_HOST_1,
+  user: process.env.DB_USER_1,
+  password: process.env.DB_PASSWORD_1,
+  database: process.env.DB_NAME_1,
 };
 
 const dbConfig2 = {
@@ -42,18 +50,18 @@ export async function createConnections() {
 `);
     // ok
     await connectionPool1.query(`
-  CREATE TABLE IF NOT EXISTS Student (
-    student_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    fname VARCHAR(255),
-    ssid INT,
-    department_id INT,
-    current_semester INT DEFAULT 1,
-    picture VARCHAR(255),
-    FOREIGN KEY (department_id) REFERENCES Department(department_id)
-      ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE INDEX unique_ssid (ssid)
-  );
+    CREATE TABLE IF NOT EXISTS Student (
+      student_id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255),
+      fname VARCHAR(255),
+      ssid INT,
+      department_id INT,
+      current_semester INT DEFAULT 0,
+      picture VARCHAR(255),
+      FOREIGN KEY (department_id) REFERENCES Department(department_id)
+        ON DELETE RESTRICT ON UPDATE RESTRICT, 
+      UNIQUE INDEX unique_ssid (ssid)
+    );
 `);
 
     // ok
@@ -65,11 +73,10 @@ export async function createConnections() {
       email VARCHAR(255) UNIQUE,
       password VARCHAR(255),
       picture VARCHAR(255),
+      refreshToken VARCHAR(255),
       userType ENUM('ادمین','کاربر','استاد') DEFAULT 'کاربر'
     );
   `);
-
-    // 
     await connectionPool1.query(`
     CREATE TABLE IF NOT EXISTS Subject (
       subject_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -78,30 +85,26 @@ export async function createConnections() {
       credit INT,
       semester_id INT, 
       FOREIGN KEY (department_id) REFERENCES Department(department_id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+        ON DELETE RESTRICT ON UPDATE RESTRICT, 
       FOREIGN KEY (semester_id) REFERENCES Semester(semester_id)
-      ON DELETE CASCADE ON UPDATE CASCADE 
+        ON DELETE RESTRICT ON UPDATE RESTRICT 
     );
   `);
-  
-  
-
-    // For Enrollment table
     await connectionPool1.query(`
-CREATE TABLE IF NOT EXISTS Enrollment (
-  enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
-  student_id INT,
-  subject_id INT,
-  semester_id INT,
-  grade INT,
-  FOREIGN KEY (student_id) REFERENCES Student(student_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (subject_id) REFERENCES Subject(subject_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (semester_id) REFERENCES Semester(semester_id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  UNIQUE KEY unique_enrollment (student_id, subject_id, semester_id)
-);
+    CREATE TABLE IF NOT EXISTS Enrollment (
+      enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+      student_id INT,
+      subject_id INT,
+      semester_id INT,
+      grade INT,
+      FOREIGN KEY (student_id) REFERENCES Student(student_id)
+        ON DELETE RESTRICT ON UPDATE RESTRICT, 
+      FOREIGN KEY (subject_id) REFERENCES Subject(subject_id)
+        ON DELETE RESTRICT ON UPDATE RESTRICT,
+      FOREIGN KEY (semester_id) REFERENCES Semester(semester_id)
+        ON DELETE RESTRICT ON UPDATE RESTRICT,
+      UNIQUE KEY unique_enrollment (student_id, subject_id, semester_id)
+    );
 `);
     await connectionPool1.query(`
     CREATE TABLE IF NOT EXISTS SemesterRegistration (
@@ -110,15 +113,15 @@ CREATE TABLE IF NOT EXISTS Enrollment (
       semester_id INT,
       passed BOOLEAN DEFAULT 0,
       FOREIGN KEY (student_id) REFERENCES Student(student_id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+        ON DELETE RESTRICT ON UPDATE RESTRICT, 
       FOREIGN KEY (semester_id) REFERENCES Semester(semester_id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+        ON DELETE RESTRICT ON UPDATE RESTRICT 
     );
   `);
 
     console.log("✨ DB connected successfully 💫");
   } catch (error) {
-    console.error("Error establishing database connections:", error);
+    console.error("Error establishing database connections:", error.message);
     throw error;
   }
 }

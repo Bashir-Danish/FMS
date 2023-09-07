@@ -6,15 +6,16 @@ import {
   updateSubject,
   deleteSubjectsBySemester,
   deleteSubjectById,
-  addSingleSubject
+  addSingleSubject,
 } from "../controllers/subjectController.js";
+import { isAuthenticatedUser } from "../utils/auth.js";
 
 const router = express.Router();
 
-router.route("/").get(getSubjects).post(createSubject);
-router.route("/new").post(addSingleSubject);
-router.route("/:semesterId/:departmentId").delete(deleteSubjectsBySemester);
-router.route("/:subjectId").delete(deleteSubjectById);
-router.route("/:id").get(getById).put(updateSubject);
+router.route("/").get(isAuthenticatedUser, getSubjects).post(isAuthenticatedUser,createSubject);
+router.route("/new").post(isAuthenticatedUser,addSingleSubject);
+router.route("/:semesterId/:departmentId").delete(isAuthenticatedUser,deleteSubjectsBySemester);
+router.route("/:subjectId").delete(isAuthenticatedUser,deleteSubjectById);
+router.route("/:id").get(isAuthenticatedUser,getById).put(isAuthenticatedUser,updateSubject);
 
 export default router;

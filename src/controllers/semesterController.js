@@ -1,4 +1,42 @@
 
+import { Worker } from 'worker_threads';
+;
+
+export const processEnrollment = async (req, res) => {
+  try {
+    const semesterIdsToProcess = req.body.semesterIdsToProcess; 
+    console.log(semesterIdsToProcess);
+
+    const worker = new Worker('./src/controllers/enrollmentProcessor.js', {
+      workerData: {
+        semesterIdsArray: semesterIdsToProcess,
+      },
+    });
+
+    let enrollmentMessages = [];
+
+    worker.on('message', (message) => {
+      console.log(message);
+      enrollmentMessages.push(message);
+    });
+
+    worker.on('exit', (code) => {
+      if (code === 0) {
+        // Worker process completed successfully
+        res.json({ messages: enrollmentMessages[0] });
+      } else {
+        // Worker process encountered an error
+        res.status(500).json({ error: 'Error processing enrollment' });
+      }
+    });
+  } catch (error) {
+    console.error('Error processing enrollment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
 export const getSemesters = async (req, res) => {
   const conn = req.connect;
 
