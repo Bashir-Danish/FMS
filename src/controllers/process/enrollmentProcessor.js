@@ -2,19 +2,18 @@ import mysql from "mysql2/promise";
 import { Worker, parentPort, workerData } from "worker_threads";
 import {getConnectionPool} from '../../configs/connection.js'
 
-// Database configuration
-// const dbConfig = {
-//   host: process.env.DB_HOST_1,
-//   user: process.env.DB_USER_1,
-//   password: process.env.DB_PASSWORD_1,
-//   database: process.env.DB_NAME_1,
-// };
 const dbConfig = {
-  host:  "192.168.1.250",
-  user:  "dos",
-  password:  "dos1234",
-  database: "Fms1",
+  host: process.env.DB_HOST_1,
+  user: process.env.DB_USER_1,
+  password: process.env.DB_PASSWORD_1,
+  database: process.env.DB_NAME_1,
 };
+// const dbConfig = {
+//   host:  "192.168.1.250",
+//   user:  "dos",
+//   password:  "dos1234",
+//   database: "Fms1",
+// };
 async function enrollStudentsInSubjects(semesterId) {
   const conn = await mysql.createConnection(dbConfig);
   try {
