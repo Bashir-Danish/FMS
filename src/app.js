@@ -18,8 +18,8 @@ import subjectRouter from "./routes/subject.js";
 import enrollRouter from "./routes/enrolls.js";
 import fileUpload from "express-fileupload";
 import path from "path";
-import   cookieParser from 'cookie-parser';
-// import { mkdir } from "fs";
+import cookieParser from "cookie-parser";
+import fs from "fs";
 
 config();
 
@@ -29,8 +29,8 @@ createConnections();
 app.use(morgan("dev"));
 
 const corsOptions = {
-  origin: 'http://localhost:5173', 
-  credentials: true, 
+  origin: "http://localhost:5173",
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -67,32 +67,86 @@ app.use("/api/v1/students", studentRouter);
 app.use("/api/v1/subjects", subjectRouter);
 app.use("/api/v1/enrolls", enrollRouter);
 
-app.post("/api/v1/upload", async function (req, res, next) {
-  let uploadPath = [];
+function generateUniqueFilename() {
+  const timestamp = new Date().getTime();
+  const random = Math.floor(Math.random() * 100000000);
 
-    try {
-      if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).send("No files were uploaded.");
+  return `image_${timestamp}_${random}`;
+}
+
+app.post("/api/v1/upload", async (req, res) => {
+  const { fileType, id } = req.body;
+  console.log(id);
+  console.log(fileType);
+  console.log(req.files);
+
+  if (!req.files || !fileType) {
+    return res.status(400).json({
+      error:
+        "Please provide a file and fileType (user, updateuser, student, or updatestudent)",
+    });
+  }
+
+  const file = req.files.file;
+  const uniqueFilename = generateUniqueFilename();
+  const ext = file.name.split(".").filter(Boolean).slice(1).join(".");
+
+  let folder = "";
+  let imagePath;
+
+  if (fileType === "user" || fileType === "updateuser") {
+    folder = "users";
+  } else if (fileType === "student" || fileType === "updatestudent") {
+    folder = "students";
+  } else {
+    return res.status(400).json({ error: "Invalid 'fileType' value" });
+  }
+
+  try {
+    if (id) {
+      const query = `SELECT picture FROM ${
+        fileType === "user" ? "User" : "Student"
+      } WHERE ${fileType === "user" ? "user_id" : "student_id"} = ?`;
+      const [rows] = await req.connect.query(query, [id]);
+
+      if (rows && rows.length > 0) {
+        const oldImagePath = rows[0].picture.replace("/uploads/", "");
+        console.log(oldImagePath);
+        const oldFilePath = path.resolve(
+          path.dirname("") + `/src/uploads/${oldImagePath}`
+        );
+
+        if (fs.existsSync(oldFilePath)) {
+          try {
+            fs.unlinkSync(oldFilePath);
+          } catch (error) {
+            console.error(`Error deleting old file: ${error}`);
+          }
+        }
       }
-      const file = req.files.file;
-      let ext = file.name.split(".").filter(Boolean).slice(1).join(".");
-      let filePath = path.resolve(path.dirname("") + `/src/uploads/users/${req.body.email}` + "." + ext);
-      console.log(file + "ddddddddddd");
-      file.mv(filePath, function (err) {
-        if (err) return res.status(500).send(err);
-      });
-      uploadPath.push(`/uploads/users/${req.body.email}` + "." + ext);
-
-   
-  
-      res.json({
-        message: "File uploaded!",
-        uploadPath,
-      });
-    } catch (error) {
-      next(error);
     }
-  
+
+    imagePath = `/uploads/${folder}/${uniqueFilename}.${ext}`;
+    const updateQuery = `UPDATE ${
+      fileType === "user" ? "User" : "Student"
+    } SET picture = ? WHERE ${
+      fileType === "user" ? "user_id" : "student_id"
+    } = ?`;
+    await req.connect.query(updateQuery, [imagePath, id]);
+
+    const filePath = path.resolve(
+      path.dirname("") + `/src/uploads/${folder}/${uniqueFilename}` + "." + ext
+    );
+    file.mv(filePath, (err) => {
+      if (err) return res.status(500).json({ mverror: err.message });
+      res
+        .status(200)
+        .json({ message: "File uploaded successfully", imagePath: imagePath });
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ catcherror: error });
+  }
 });
 
 app.get("/seed", async (req, res) => {

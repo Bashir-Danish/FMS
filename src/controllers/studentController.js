@@ -22,28 +22,10 @@ function generateUniqueFilename() {
   return `image_${timestamp}_${random}`;
 }
 export const createStudent = async (req, res) => {
-  const { name, fname, ssid, department_id, current_semester } = req.body;
+  const { name, fname, ssid, department_id, current_semester, imagePath } =
+    req.body;
   const conn = req.connect;
-  console.log(req.body);
-  let uploadPath;
-  try {
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send({ error: "فایل آپلود نشد" });
-    }
-    const file = req.files.file;
-    const uniqueFilename = generateUniqueFilename();
 
-    let ext = file.name.split(".").filter(Boolean).slice(1).join(".");
-    let filePath = path.resolve(
-      path.dirname("") + `/src/uploads/student/${uniqueFilename}` + "." + ext
-    );
-    file.mv(filePath, function (err) {
-      if (err) return res.status(500).send(err);
-    });
-    uploadPath = `/uploads/student/${uniqueFilename}` + "." + ext;
-  } catch (error) {
-    console.log(error);
-  }
   try {
     const checkQuery = `
       SELECT * FROM Student WHERE ssid = ?
@@ -57,34 +39,31 @@ export const createStudent = async (req, res) => {
     } else {
       let student_id;
       let insertQuery;
+      const queryValues = [name, fname, ssid, department_id, imagePath];
+
       if (parseFloat(current_semester) !== 0) {
         insertQuery = `
-         INSERT INTO Student ( name, fname, ssid, department_id,current_semester,picture)
-         VALUES (?, ?, ?, ?,?,?)
-       `;
-       console.log('this')
-       console.log(parseFloat(current_semester))
-       console.log(department_id)
+          INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        queryValues.splice(4, 0, parseFloat(current_semester));
       } else {
         insertQuery = `
-         INSERT INTO Student ( name, fname, ssid, department_id,picture)
-         VALUES (?, ?, ?, ?,?)
-       `;
+          INSERT INTO Student (name, fname, ssid, department_id, picture)
+          VALUES (?, ?, ?, ?, ?)
+        `;
       }
-      const [result] = await conn.query(
-        insertQuery,
-        current_semester
-          ? [name, fname, ssid, department_id, parseFloat(current_semester), uploadPath]
-          : [name, fname, ssid, department_id, uploadPath]
-      );
 
+      const [result] = await conn.query(insertQuery, queryValues);
       student_id = result.insertId;
 
       const selectQuery = `
-        SELECT student_id, name, fname, ssid, department_id,picture,current_semester FROM Student WHERE student_id = ?
+        SELECT student_id, name, fname, ssid, department_id, picture, current_semester FROM Student WHERE student_id = ?
       `;
       const [studentData] = await conn.query(selectQuery, [student_id]);
       const student = studentData[0];
+
+      console.log(student);
 
       res.status(201).json({ student, message: "محصل موفقانه اضافه شد" });
     }
@@ -117,10 +96,10 @@ export const getStudentById = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   const { id } = req.params;
-  const { name, fname, ssid, department_id, current_semester } = req.body;
+  const { name, fname, ssid, department_id, current_semester , imagePath} = req.body;
   console.log(req.body);
   const conn = req.connect;
-  let newFilePath = null;
+ 
 
   try {
     const getStudentQuery = `
@@ -135,46 +114,46 @@ export const updateStudent = async (req, res) => {
 
     const student = studentRows[0];
 
-    if (req.files && req.files.file) {
-      const file = req.files.file;
-      const ext = file.name.split(".").pop();
+    // if (req.files && req.files.file) {
+    //   const file = req.files.file;
+    //   const ext = file.name.split(".").pop();
 
-      const oldFilePath = path.resolve(
-        path.dirname("") + "/src/" + student.picture
-      );
+    //   const oldFilePath = path.resolve(
+    //     path.dirname("") + "/src/" + student.picture
+    //   );
 
-      try {
-        await fs.promises.unlink(oldFilePath);
-      } catch (error) {
-        console.error("Error deleting previous user image:", error);
-      }
+    //   try {
+    //     await fs.promises.unlink(oldFilePath);
+    //   } catch (error) {
+    //     console.error("Error deleting previous user image:", error);
+    //   }
 
-      const uniqueFilename = generateUniqueFilename();
-      newFilePath = `/uploads/student/${uniqueFilename}` + "." + ext;
-      const filePath = path.resolve(path.dirname("") + "/src" + newFilePath);
+    //   const uniqueFilename = generateUniqueFilename();
+    //   newFilePath = `/uploads/student/${uniqueFilename}` + "." + ext;
+    //   const filePath = path.resolve(path.dirname("") + "/src" + newFilePath);
 
-      try {
-        file.mv(filePath, function (err) {
-          if (err) {
-            console.error("Error updating student profile picture:", err);
-          }
-        });
-      } catch (error) {
-        console.error("Error updating student profile picture:", error);
-      }
-    }
+    //   try {
+    //     file.mv(filePath, function (err) {
+    //       if (err) {
+    //         console.error("Error updating student profile picture:", err);
+    //       }
+    //     });
+    //   } catch (error) {
+    //     console.error("Error updating student profile picture:", error);
+    //   }
+    // }
 
     fname, ssid, department_id;
 
     const updatedFields = {
-      name: name !== undefined ? name : student.name,
-      fname: fname !== undefined ? fname : student.fname,
-      ssid: ssid !== undefined ? ssid : student.ssid,
+      name: name  ?? student.name,
+      fname: fname ?? student.fname,
+      ssid: ssid ??  student.ssid,
       department_id:
         !isNaN(parseFloat(department_id)) !== undefined
           ? parseFloat(department_id)
           : student.department_id,
-      picture: newFilePath !== null ? newFilePath : student.picture,
+      picture: imagePath !== null ? imagePath : student.picture,
       current_semester:
         !isNaN(parseFloat(current_semester)) !== undefined
           ? parseFloat(current_semester)

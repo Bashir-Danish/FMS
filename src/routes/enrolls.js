@@ -1,13 +1,14 @@
 import express from "express";
 import {
-    getEnrollments
+    getEnrollments,
+    updateGrades
 } from "../controllers/enrollController.js";
 import { isAuthenticatedUser } from "../utils/auth.js";
 
 const router = express.Router();
 
 router.get("/", getEnrollments);
-// router.post("/register", isAuthenticatedUser, createUser);
+router.post("/import", isAuthenticatedUser, updateGrades);
 // router
 //   .route("/:id")
 //   .get(isAuthenticatedUser, getUserById)

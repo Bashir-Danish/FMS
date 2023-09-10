@@ -27,28 +27,9 @@ function generateUniqueFilename() {
   return `image_${timestamp}_${random}`;
 }
 export const createUser = async (req, res) => {
-  const { name, lastName, email, password, userType } = req.body;
+  const { name, lastName, email, password, userType,imagePath } = req.body;
   const conn = req.connect;
-  let uploadPath;
-  console.log(req.files.file);
-  try {
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send({ error: "فایل آپلود نشد" });
-    }
-    const file = req.files.file;
-    const uniqueFilename = generateUniqueFilename();
-
-    let ext = file.name.split(".").filter(Boolean).slice(1).join(".");
-    let filePath = path.resolve(
-      path.dirname("") + `/src/uploads/users/${uniqueFilename}` + "." + ext
-    );
-    file.mv(filePath, function (err) {
-      if (err) return res.status(500).send(err);
-    });
-    uploadPath = `/uploads/users/${uniqueFilename}` + "." + ext;
-  } catch (error) {
-    console.log(error);
-  }
+   
   try {
     const checkQuery = `
       SELECT * FROM User WHERE email = ?
@@ -77,7 +58,7 @@ export const createUser = async (req, res) => {
           lastName,
           email,
           hashedPassword,
-          uploadPath,
+          imagePath,
         ]);
 
         user_Id = result.insertId;
@@ -92,7 +73,7 @@ export const createUser = async (req, res) => {
           email,
           hashedPassword,
           userType,
-          uploadPath,
+          imagePath,
         ]);
 
         user_Id = result.insertId;
@@ -114,7 +95,7 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, lastName, email, password, userType } = req.body;
+  const { name, lastName, email, password, userType ,imagePath} = req.body;
   const conn = req.connect;
   let newFilePath = null;
 
@@ -131,34 +112,6 @@ export const updateUser = async (req, res) => {
 
     const user = userRows[0];
 
-    if (req.files && req.files.file) {
-      const file = req.files.file;
-      const ext = file.name.split(".").filter(Boolean).slice(1).join(".");
-
-      const oldFilePath = path.resolve(
-        path.dirname("") + "/src/" + user.picture
-      );
-
-      try {
-        await fs.promises.unlink(oldFilePath); // Delete the previous image file
-      } catch (error) {
-        console.error("Error deleting previous user image:", error);
-      }
-
-      const uniqueFilename = generateUniqueFilename();
-      newFilePath = `/uploads/users/${uniqueFilename}` + "." + ext;
-      const filePath = path.resolve(path.dirname("") + "/src" + newFilePath);
-
-      try {
-        file.mv(filePath, function (err) {
-          if (err) {
-            console.error("Error updating user profile picture:", err);
-          }
-        });
-      } catch (error) {
-        console.error("Error updating user profile picture:", error);
-      }
-    }
 
     let hashedPassword;
     if (password !== "undefined" && password !== "") {
@@ -168,12 +121,12 @@ export const updateUser = async (req, res) => {
     }
 
     const updatedFields = {
-      name: name !== undefined ? name : user.name,
-      lastName: lastName !== undefined ? lastName : user.lastName,
-      userType: userType !== undefined ? userType : user.userType,
-      email: email !== undefined ? email : user.email,
+      name:  name ?? user.name,
+      lastName: lastName ??  user.lastName,
+      userType: userType ?? user.userType,
+      email: email ?? user.email,
       password: hashedPassword,
-      picture: newFilePath !== null ? newFilePath : user.picture,
+      picture: imagePath ?? user.picture,
     };
 
     const updateQuery = `

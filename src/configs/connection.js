@@ -1,19 +1,21 @@
 import { createConnectionPool } from "./dbConfig.js";
 import { config } from "dotenv";
+import bcrypt from "bcrypt";
+
 config();
 
-// const dbConfig1 = {
-//   host: process.env.DB_HOST_1 || "190.92.190.16",
-//   user: process.env.DB_USER_1 || "dos",
-//   password: process.env.DB_PASSWORD_1 || "dos1234",
-//   database: process.env.DB_NAME_ || "Fms1",
-// };
 const dbConfig1 = {
-  host: process.env.DB_HOST_1,
-  user: process.env.DB_USER_1,
-  password: process.env.DB_PASSWORD_1,
-  database: process.env.DB_NAME_1,
+  host:  "192.168.1.250",
+  user:  "dos",
+  password:  "dos1234",
+  database: "Fms1",
 };
+// const dbConfig1 = {
+//   host: process.env.DB_HOST_1,
+//   user: process.env.DB_USER_1,
+//   password: process.env.DB_PASSWORD_1,
+//   database: process.env.DB_NAME_1,
+// };
 
 const dbConfig2 = {
   host: process.env.DB_HOST_2 || "localhost",
@@ -118,6 +120,27 @@ export async function createConnections() {
         ON DELETE RESTRICT ON UPDATE RESTRICT 
     );
   `);
+
+    const insertQuery = `
+  INSERT IGNORE INTO User (name, lastName, email, password, userType)
+  VALUES (?, ?, ?, ?, ?)
+`;
+
+    // Change these values to match your admin user's information
+    const adminName = "bashir";
+    const adminLastName = "danish";
+    const adminEmail = "bashirdanish124@gmail.com";
+    const adminPassword = await bcrypt.hash("dos1234", 10);
+    const adminUserType = "ادمین";
+
+    // Execute the insert query
+    const [result] = await connectionPool1.query(insertQuery, [
+      adminName,
+      adminLastName,
+      adminEmail,
+      adminPassword,
+      adminUserType,
+    ]);
 
     console.log("✨ DB connected successfully 💫");
   } catch (error) {

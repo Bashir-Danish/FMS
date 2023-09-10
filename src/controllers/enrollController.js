@@ -1,3 +1,6 @@
+
+import { Worker ,isMainThread} from 'worker_threads';
+
 export const getEnrollments = async (req, res) => {
     const conn = req.connect;
     const { semesterId, departmentId } = req.query; 
@@ -90,4 +93,30 @@ export const getEnrollments = async (req, res) => {
         console.error("Error retrieving enrollments:", error);
         res.status(500).json({ error: "Internal server error" });
     }
+};
+
+
+
+export const updateGrades = async (req, res) => {
+  const { semesterId, departmentId, enrollmentsData } = req.body;
+
+  if (isMainThread) {
+    const worker = new Worker('./src/controllers/process/importEnrolls.js', {
+      workerData: { semesterId, departmentId, enrollmentsData },
+    });
+
+  
+    worker.on("message", (message) => {
+      res.status(200).json({ message });
+    });
+
+   
+    worker.on("error", (error) => {
+      console.error("Worker error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    });
+  } else {
+    // This code block will execute in the worker thread
+    // It should contain the logic to update grades (as shown in the previous worker script)
+  }
 };

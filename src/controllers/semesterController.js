@@ -7,7 +7,7 @@ export const processEnrollment = async (req, res) => {
     const semesterIdsToProcess = req.body.semesterIdsToProcess; 
     console.log(semesterIdsToProcess);
 
-    const worker = new Worker('./src/controllers/enrollmentProcessor.js', {
+    const worker = new Worker('./src/controllers/process/enrollmentProcessor.js', {
       workerData: {
         semesterIdsArray: semesterIdsToProcess,
       },

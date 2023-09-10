@@ -1,21 +1,34 @@
 import mysql from "mysql2/promise";
 import { Worker, parentPort, workerData } from "worker_threads";
+import {getConnectionPool} from '../../configs/connection.js'
 
 // Database configuration
+// const dbConfig = {
+//   host: process.env.DB_HOST_1,
+//   user: process.env.DB_USER_1,
+//   password: process.env.DB_PASSWORD_1,
+//   database: process.env.DB_NAME_1,
+// };
 const dbConfig = {
-  host: process.env.DB_HOST || "192.168.1.250",
-  user: process.env.DB_USER || "dos",
-  password: process.env.DB_PASSWORD || "dos1234",
-  database: process.env.DB_NAME || "FMS1",
+  host:  "192.168.1.250",
+  user:  "dos",
+  password:  "dos1234",
+  database: "Fms1",
 };
-
 async function enrollStudentsInSubjects(semesterId) {
   const conn = await mysql.createConnection(dbConfig);
   try {
+    // console.log(semesterId);
+    console.log(semesterId);
     const semesterQuery = "SELECT * FROM Semester WHERE semester_id = ?";
     const [semesters] = await conn.query(semesterQuery, [semesterId]);
+    console.log(semesters);
+    if (semesters.length === 0) {
+      console.error(`Semester with ID ${semesterId} not found`);
+      return `Semester with ID ${semesterId} not found`;
+    }
+    
     const semester = semesters[0];
-
     const eligibleStudentsQuery = `
       SELECT s.student_id, s.department_id, s.current_semester
       FROM Student s
@@ -23,10 +36,9 @@ async function enrollStudentsInSubjects(semesterId) {
         SELECT department_id FROM Subject WHERE semester_id = ?
       )
     `;
-
     const [eligibleStudents] = await conn.query(eligibleStudentsQuery, [
-      semester.semester_number - 1,
-      0,
+      0, 
+      semester.semester_number - 1, 
       semesterId,
     ]);
 
@@ -85,7 +97,7 @@ async function enrollStudentsInSubjects(semesterId) {
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
         );
-          // console.log(currentSemesterSubjects);
+        // console.log(currentSemesterSubjects);
         const totalCredits = currentSemesterSubjects.reduce(
           (sum, subject) => sum + subject.credit,
           0
