@@ -28,18 +28,22 @@ createConnections();
 
 app.use(morgan("dev"));
 
-app.use(cors({
-  origin: ['https://app.kdanish.com','http://localhost:5173'], 
-  credentials: true, 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-  allowedHeaders: ['Content-Type', 'Authorization'] 
-}));
-// app.use(cors(corsOptions));
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+// app.use(cors({
+//   origin: ['https://app.kdanish.com','http://localhost:5173'], 
+//   credentials: true, 
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+//   allowedHeaders: ['Content-Type', 'Authorization'] 
+// }));
+// // app.use(cors(corsOptions));
+// app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', 'https://app.kdanish.com');
+
+});
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
-// app.use(cors("*"));
+app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
