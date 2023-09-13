@@ -28,14 +28,12 @@ createConnections();
 
 app.use(morgan("dev"));
 
-// const corsOptions = {
-//   origin: "http://localhost:5173",
-//   credentials: true,
-// };
+app.use(cors({
+  origin: ['http://localhost:5173','https://app.kdanish.com'], 
+  credentials: true // Allow cookies to be sent
+}));
 
-// app.use(cors(corsOptions));
-
-app.use(cors("*"));
+// Use other middlewares and routes as usual
 app.use(helmet());
 app.use(express.json());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -43,7 +41,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(fileUpload());
 app.use(cookieParser());
 
