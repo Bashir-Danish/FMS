@@ -26,25 +26,25 @@ config();
 const app = express();
 createConnections();
 
-
-import cors from "cors";
+app.use(morgan("dev"));
 
 const corsOptions = {
-  origin: "*", 
+  origin: "https://app.kdanish.com",
   credentials: true,
 };
 
 app.use(cors(corsOptions));
+// app.use(cors("*"));
 
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-
-app.use(morgan("dev"));
 app.use(helmet());
-
+app.use(express.json());
+app.use(cors(corsOptions));
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(fileUpload());
 app.use(cookieParser());
 
