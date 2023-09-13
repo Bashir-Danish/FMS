@@ -35,10 +35,11 @@ app.use(morgan("dev"));
 // };
 
 // app.use(cors(corsOptions));
-app.use(cors());
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
-// app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
