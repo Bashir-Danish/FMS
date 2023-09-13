@@ -26,25 +26,23 @@ config();
 const app = express();
 createConnections();
 
+
 app.use(morgan("dev"));
 
-const corsOptions = {
-  origin: "https://app.kdanish.com",
-  credentials: true,
-};
+// Use cors middleware with options
+app.use(cors({
+  origin: 'https://app.kdanish.com', // Specify the allowed origin
+  credentials: true // Allow cookies to be sent
+}));
 
-app.use(cors(corsOptions));
-// app.use(cors("*"));
-
+// Use other middlewares and routes as usual
 app.use(helmet());
 app.use(express.json());
-app.use(cors(corsOptions));
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(fileUpload());
 app.use(cookieParser());
 
