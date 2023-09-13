@@ -28,25 +28,31 @@ createConnections();
 
 app.use(morgan("dev"));
 
-// Use cors middleware with options
-app.use(
-  cors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    // replace these domains with your own local and hosted domains
+    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com"];
+    if (allowedDomains.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
 
-// Use other middlewares and routes as usual
+app.use(cors(corsOptions));
+// app.use(cors("*"));
+
 app.use(helmet());
 app.use(express.json());
+app.use(cors(corsOptions));
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(fileUpload());
 app.use(cookieParser());
 
