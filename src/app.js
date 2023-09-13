@@ -26,17 +26,16 @@ config();
 const app = express();
 createConnections();
 
-app.use(morgan("dev"));
 
-app.use(cors({
-  origin: ['http://localhost:5173','https://app.kdanish.com'], 
-  credentials: true // Allow cookies to be sent
-}));
-
-// Use other middlewares and routes as usual
-app.use(helmet());
-app.use(express.json());
+// app.use(cors({
+//   origin: ['http://localhost:5173','https://app.kdanish.com'], 
+//   credentials: true 
+// }));
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+
+app.use(morgan("dev"));
+app.use(helmet());
+app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
