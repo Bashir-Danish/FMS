@@ -27,15 +27,20 @@ const app = express();
 createConnections();
 
 
-// app.use(cors({
-//   origin: ['http://localhost:5173','https://app.kdanish.com'], 
-//   credentials: true 
-// }));
+import cors from "cors";
+
+const corsOptions = {
+  origin: "*", 
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 
 app.use(morgan("dev"));
 app.use(helmet());
-app.use(cors("*"));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
