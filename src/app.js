@@ -26,14 +26,18 @@ config();
 const app = express();
 createConnections();
 
-
 app.use(morgan("dev"));
 
 // Use cors middleware with options
-app.use(cors({
-  origin: 'https://app.kdanish.com', // Specify the allowed origin
-  credentials: true // Allow cookies to be sent
-}));
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    credentials: true,
+  })
+);
 
 // Use other middlewares and routes as usual
 app.use(helmet());
