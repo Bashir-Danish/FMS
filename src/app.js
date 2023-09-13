@@ -37,8 +37,16 @@ app.use(morgan("dev"));
 // // app.use(cors(corsOptions));
 // app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(function (req, res, next) {
+ 
   res.header('Access-Control-Allow-Origin', 'https://app.kdanish.com');
 
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  res.header('Access-Control-Allow-Credentials', true);
+
+  next();
 });
 app.use(morgan("dev"));
 app.use(helmet());
