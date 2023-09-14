@@ -27,10 +27,13 @@ const app = express();
 createConnections();
 
 app.use(morgan("dev"));
+app.use(function (req, res, next) {
+  req.headers.origin = req.headers.origin || req.headers.host;
+  next();
+});
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // replace these domains with your own local and hosted domains
   console.log(`origin: ${origin}`);
     
     const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
