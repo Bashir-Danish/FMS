@@ -72,6 +72,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  req.connect = getConnectionPool();
+  req.connNum = req.connect === connectionPool1 ? 1 : 2;
+  console.log(`Request received with connection number: ${req.connNum}`);
+  next();
+});
 
 app.use(fileUpload());
 app.use(cookieParser());
@@ -80,14 +86,6 @@ app.use(
   "/uploads",
   express.static(path.join(path.dirname(""), "./src/uploads/"))
 );
-
-app.use((req, res, next) => {
-  req.connect = getConnectionPool();
-  req.connNum = req.connect === connectionPool1 ? 1 : 2;
-  console.log(`Request received with connection number: ${req.connNum}`);
-  next();
-});
-
 app.use("/api/v1/departments", departmentRouter);
 app.use("/api/v1/semesters", semesterRouter);
 app.use("/api/v1/users", userRouter);
