@@ -188,6 +188,11 @@ app.post("/api/v1/upload", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
+  });
+});
 app.get("/seed", async (req, res) => {
   try {
     // await req.connect.query("SET FOREIGN_KEY_CHECKS = 0");
@@ -204,11 +209,6 @@ app.get("/seed", async (req, res) => {
     console.error("Error dropping tables:", error);
   }
 
-  res.json({
-    message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
-  });
-});
-app.get("/", (req, res) => {
   res.json({
     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
   });
