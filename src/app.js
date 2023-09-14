@@ -35,7 +35,7 @@ app.use(function (req, res, next) {
 const corsOptions = {
   origin: function (origin, callback) {
     console.log(`origin: ${origin}`);
-    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
+    const allowedDomains = ["https://app.kdanish.com","http://localhost:5173","https://api.kdanish.com"];
     if (!origin || allowedDomains.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
