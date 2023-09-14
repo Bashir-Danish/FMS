@@ -47,7 +47,7 @@ app.use((req, res, next) => {
 // };
 
 // app.use(cors(corsOptions));
-app.use(cors("*"));
+app.use(cors());
 
 app.use(helmet());
 app.use(express.json());
