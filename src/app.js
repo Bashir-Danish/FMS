@@ -27,16 +27,17 @@ const app = express();
 createConnections();
 
 app.use(morgan("dev"));
-app.use(function (req, res, next) {
-  req.headers.origin = req.headers.origin || req.headers.host;
-  next();
-});
 
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log(`origin: ${origin}`);
+    const origin = req.headers.origin || req.headers.host;
     const allowedDomains = ["https://app.kdanish.com","http://localhost:5173","https://api.kdanish.com"];
-    if (!origin || allowedDomains.indexOf(origin) !== -1) {
+    console.log(`origin: ${origin}`);
+    if (origin && allowedDomains.indexOf(origin) !== -1) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       callback(null, true)
     } else {
       callback(new Error(`Not allowed by CORS ${origin}`));
