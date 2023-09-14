@@ -32,25 +32,20 @@ app.use(function (req, res, next) {
   next();
 });
 
+const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
 const corsOptions = {
   origin: function (origin, callback) {
-  console.log(`origin: ${origin}`);
-    
-    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
-    
-    if (allowedDomains.includes(origin)) {
-
-      callback(null, true);
+    console.log(`origin: ${origin}`);
+    if (!origin || allowedDomains.indexOf(origin) !== -1) {
+      callback(null, true)
     } else {
+     
       callback(new Error(`Not allowed by CORS ${origin}`));
     }
   },
   credentials: true,
 };
-app.use((req, res, next) => {
-  console.log(`Received request for: ${req.url}`);
-  next();
-});
+
 
 app.use(cors(corsOptions));
 // app.use(cors("*"));
