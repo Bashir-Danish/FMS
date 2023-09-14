@@ -21,48 +21,43 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import fs from "fs";
 
-
 config();
 
-
 const app = express();
+// app.use((req, res, next) => {
+//   req.headers.origin = req.headers.origin || req.headers.host;
+//   next();
+// });
+
+// const allowedDomains = [
+//   "https://api.kdanish.com",
+//   "https://app.kdanish.com",
+//   "http://localhost:5173",
+// ];
+
+// app.use(
+//   cors({
+//     origin: ['https://app.kdanish.com', 'http://localhost:5173'], 
+//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//     credentials: true, 
+//     optionsSuccessStatus: 204, 
+//   })
+// );
 
 
 createConnections();
 
 app.use(morgan("dev"));
 
-
-app.use((req, res, next) => {
-  req.headers.origin = req.headers.origin || req.headers.host;
-  next();
-});
-
-const allowedDomains = [
-  "https://api.kdanish.com",
-  "https://app.kdanish.com",
-  "http://localhost:5173",
-];
-
-app.use(
-  cors({
-    origin: ['https://app.kdanish.com', 'http://localhost:5173'], 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, 
-    optionsSuccessStatus: 204, 
-  })
-);
-
-
 app.use(helmet());
-app.use(express.json());
+app.use(cors("*"));
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-
+app.use(fileUpload());
+app.use(cookieParser());
 app.use((req, res, next) => {
   req.connect = getConnectionPool();
   req.connNum = req.connect === connectionPool1 ? 1 : 2;
@@ -71,17 +66,17 @@ app.use((req, res, next) => {
 });
 
 
-app.use(fileUpload());
-app.use(cookieParser());
-
-
 app.use(
   "/uploads",
   express.static(path.join(path.dirname(""), "./src/uploads/"))
 );
 
 
-
+app.get('/', (req, res) => {
+  res.json({
+    message: '🦄🌈✨👋🌎🌍🌏✨🌈🦄',
+  });
+});
 
 function generateUniqueFilename() {
   const timestamp = new Date().getTime();
@@ -200,6 +195,16 @@ app.get("/seed", async (req, res) => {
   });
 });
 
+app.use("/api/v1/departments", departmentRouter);
+app.use("/api/v1/semesters", semesterRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/students", studentRouter);
+app.use("/api/v1/subjects", subjectRouter);
+app.use("/api/v1/enrolls", enrollRouter);
+
+
+app.use(notFound);
 app.use(errorHandler);
 
 export default app;
+
