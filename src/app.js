@@ -28,32 +28,25 @@ createConnections();
 
 app.use(morgan("dev"));
 
-app.use(function (req, res, next) {
-  req.headers.origin = req.headers.origin || req.headers.host;
-  console.log(`res header ${req.headers.origin}`  );
-  next();
-});
-
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log(`origin: ${origin}`);
-    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
-    if (!origin || allowedDomains.indexOf(origin) !== -1) {
-      
-      callback(null, true)
+    console.log(`origin :${origin}`);
+    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com","https://api.kdanish.com"];
+    if (allowedDomains.includes(origin)) {
+      callback(null, true);
     } else {
-      callback(new Error(`Not allowed by CORS ${origin}`));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
 };
 
-
+app.use(cors(corsOptions));
 // app.use(cors("*"));
 
 app.use(helmet());
-app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cors(corsOptions));
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
