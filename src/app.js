@@ -31,21 +31,23 @@ app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
   next();
 });
-const corsOptions = {
-  origin: function (origin, callback) {
-    console.log(`origin ${origin}`);
-    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com"];
-    if (allowedDomains.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Not allowed by CORS ${origin}`));
-    }
-  },
-  credentials: true,
-};
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     console.log(`origin ${origin}`);
+//     const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com"];
+//     console.log(`origin ${origin}`);
 
-app.use(cors(corsOptions));
-// app.use(cors("*"));
+//     if (allowedDomains.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error(`Not allowed by CORS ${origin}`));
+//     }
+//   },
+//   credentials: true,
+// };
+
+// app.use(cors(corsOptions));
+app.use(cors("*"));
 
 app.use(helmet());
 app.use(express.json());
