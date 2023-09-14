@@ -28,11 +28,26 @@ createConnections();
 
 app.use(morgan("dev"));
 
-
 const corsOptions = {
-  origin: "*",
+  origin: function (origin, callback) {
+    // replace these domains with your own local and hosted domains
+  console.log(`origin: ${origin}`);
+    
+    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
+    
+    if (allowedDomains.includes(origin)) {
+
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS ${origin}`));
+    }
+  },
   credentials: true,
 };
+app.use((req, res, next) => {
+  console.log(`Received request for: ${req.url}`);
+  next();
+});
 
 app.use(cors(corsOptions));
 // app.use(cors("*"));
