@@ -201,7 +201,7 @@ app.get("/seed", async (req, res) => {
   });
 });
 
-app.use(notFound);
+// app.use(notFound);
 app.use(errorHandler);
 
 export default app;
