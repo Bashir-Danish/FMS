@@ -177,13 +177,12 @@ app.post("/api/v1/upload", async (req, res) => {
 // Example route to test the database connection
 app.get("/", async (req, res) => {
   try {
-    const connection = getConnectionPool(); // Replace with your connection pool function
-      
-     const [res]=  await connection.query("SELECT * FROM User");
+
+     const [res]=  await req.connect.query("SELECT * FROM User");
     res.status(200).json({ message: `Database connection is working ${res}` });
   } catch (error) {
     console.error("Database connection error:", error);
-    res.status(500).json({ error: "Database connection error" });
+    res.status(500).json({ error: `Database connection ${error}` });
   }
 });
 
