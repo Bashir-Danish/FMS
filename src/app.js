@@ -178,8 +178,8 @@ app.post("/api/v1/upload", async (req, res) => {
 app.get("/", async (req, res) => {
   try {
 
-     const [res]=  await req.connect.query("SELECT * FROM User");
-    res.status(200).json({ message: `Database connection is working ${res}` });
+     const [result]=  await req.connect.query("SELECT * FROM User");
+     return res.status(200).json({ message: `Database connection is working ${result}` });
   } catch (error) {
     console.error("Database connection error:", error);
     res.status(500).json({ error: `Database connection ${error}` });
