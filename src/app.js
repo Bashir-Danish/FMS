@@ -46,8 +46,27 @@ app.use((req, res, next) => {
 //   credentials: true,
 // };
 
-// app.use(cors(corsOptions));
-app.use(cors());
+const allowedDomains = [
+  "https://api.kdanish.com",
+  "https://app.kdanish.com",
+  "http://localhost:5173",
+];
+const corsOptions = {
+  origin: function (req, callback) {
+    console.log(`origin ${req.header("Origin")}`);
+    var corsOptions;
+    if (allowedDomains.indexOf(req.header("Origin")) !== -1) {
+      corsOptions = { origin: true }; 
+    } else {
+      corsOptions = { origin: false }; 
+    }
+    callback(null, corsOptions);
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+// app.use(cors());
 
 app.use(helmet());
 app.use(express.json());
