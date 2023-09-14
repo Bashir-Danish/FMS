@@ -51,7 +51,6 @@ app.use(cors("*"));
 
 app.use(helmet());
 app.use(express.json());
-app.use(cors(corsOptions));
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
