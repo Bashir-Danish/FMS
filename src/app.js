@@ -66,15 +66,19 @@ const allowedDomains = [
 // };
 
 // app.use(cors(corsOptions));
+import cors from 'cors';
+
+
 app.use(
   cors({
-    "origin": "*",
-    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-    "preflightContinue": false,
-    "optionsSuccessStatus": 204,
-    "credentials": true,
+    origin: ['https://app.kdanish.com', 'http://localhost:5173'], 
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, 
+    optionsSuccessStatus: 204, 
   })
 );
+
+
 
 app.use(helmet());
 app.use(express.json());
