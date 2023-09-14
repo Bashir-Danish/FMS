@@ -56,9 +56,9 @@ const allowedDomains = [
 //     console.log(`origin ${req.header("Origin")}`);
 //     var corsOptions;
 //     if (allowedDomains.indexOf(req.header("Origin")) !== -1) {
-//       corsOptions = { origin: true }; 
+//       corsOptions = { origin: true };
 //     } else {
-//       corsOptions = { origin: false }; 
+//       corsOptions = { origin: false };
 //     }
 //     callback(null, corsOptions);
 //   },
@@ -66,7 +66,15 @@ const allowedDomains = [
 // };
 
 // app.use(cors(corsOptions));
-app.use(cors("*"));
+app.use(
+  cors({
+    "origin": "*",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+    "preflightContinue": false,
+    "optionsSuccessStatus": 204,
+    "credentials": true,
+  })
+);
 
 app.use(helmet());
 app.use(express.json());
