@@ -208,6 +208,11 @@ app.get("/seed", async (req, res) => {
     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
   });
 });
+app.get("/", (req, res) => {
+  res.json({
+    message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
+  });
+});
 
 app.use(notFound);
 app.use(errorHandler);
