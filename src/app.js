@@ -32,14 +32,13 @@ app.use(function (req, res, next) {
   next();
 });
 
-const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
 const corsOptions = {
   origin: function (origin, callback) {
     console.log(`origin: ${origin}`);
+    const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com" ,"https://api.kdanish.com"];
     if (!origin || allowedDomains.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
-     
       callback(new Error(`Not allowed by CORS ${origin}`));
     }
   },
@@ -47,12 +46,11 @@ const corsOptions = {
 };
 
 
-app.use(cors(corsOptions));
 // app.use(cors("*"));
 
 app.use(helmet());
-app.use(express.json());
 app.use(cors(corsOptions));
+app.use(express.json());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
