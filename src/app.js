@@ -31,11 +31,14 @@ app.use(morgan("dev"));
 const corsOptions = {
   origin: function (origin, callback) {
     // replace these domains with your own local and hosted domains
+    
     const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com"];
+    
     if (allowedDomains.includes(origin)) {
+
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error(`Not allowed by CORS ${origin}`));
     }
   },
   credentials: true,
