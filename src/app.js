@@ -21,38 +21,28 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import fs from "fs";
 
+
 config();
 
+
 const app = express();
+
+
 createConnections();
 
 app.use(morgan("dev"));
+
+
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
   next();
 });
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     console.log(`origin ${origin}`);
-//     const allowedDomains = ["http://localhost:5173", "https://app.kdanish.com"];
-//     console.log(`origin ${origin}`);
-
-//     if (allowedDomains.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error(`Not allowed by CORS ${origin}`));
-//     }
-//   },
-//   credentials: true,
-// };
 
 const allowedDomains = [
   "https://api.kdanish.com",
   "https://app.kdanish.com",
   "http://localhost:5173",
 ];
-
-
 
 app.use(
   cors({
@@ -64,7 +54,6 @@ app.use(
 );
 
 
-
 app.use(helmet());
 app.use(express.json());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -72,6 +61,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
 app.use((req, res, next) => {
   req.connect = getConnectionPool();
   req.connNum = req.connect === connectionPool1 ? 1 : 2;
@@ -79,13 +70,17 @@ app.use((req, res, next) => {
   next();
 });
 
+
 app.use(fileUpload());
 app.use(cookieParser());
+
 
 app.use(
   "/uploads",
   express.static(path.join(path.dirname(""), "./src/uploads/"))
 );
+
+
 app.use("/api/v1/departments", departmentRouter);
 app.use("/api/v1/semesters", semesterRouter);
 app.use("/api/v1/users", userRouter);
@@ -93,12 +88,14 @@ app.use("/api/v1/students", studentRouter);
 app.use("/api/v1/subjects", subjectRouter);
 app.use("/api/v1/enrolls", enrollRouter);
 
+
 function generateUniqueFilename() {
   const timestamp = new Date().getTime();
   const random = Math.floor(Math.random() * 100000000);
 
   return `image_${timestamp}_${random}`;
 }
+
 
 app.post("/api/v1/upload", async (req, res) => {
   const { fileType, id } = req.body;
@@ -174,23 +171,20 @@ app.post("/api/v1/upload", async (req, res) => {
     res.status(500).json({ catcherror: error });
   }
 });
-// Example route to test the database connection
+
+
 app.get("/test", async (req, res) => {
   try {
-     const [result]=  await req.connect.query("SELECT * FROM User");
-     console.log(result);
-     return res.status(200).json({ message: `Database connection is working ${result}` });
+    const [result] = await req.connect.query("SELECT * FROM User");
+    console.log(result);
+    return res.status(200).json({ message: `Database connection is working ${result}` });
   } catch (error) {
     console.error("Database connection error:", error);
     res.status(500).json({ error: `Database connection ${error}` });
   }
 });
 
-// app.get("/", (req, res) => {
-//   res.json({
-//     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
-//   });
-// });
+
 app.get("/seed", async (req, res) => {
   try {
     // await req.connect.query("SET FOREIGN_KEY_CHECKS = 0");
@@ -212,7 +206,6 @@ app.get("/seed", async (req, res) => {
   });
 });
 
-// app.use(notFound);
 app.use(errorHandler);
 
 export default app;
