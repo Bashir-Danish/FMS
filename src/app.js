@@ -174,12 +174,24 @@ app.post("/api/v1/upload", async (req, res) => {
     res.status(500).json({ catcherror: error });
   }
 });
-
-app.get("/", (req, res) => {
-  res.json({
-    message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
-  });
+// Example route to test the database connection
+app.get("/", async (req, res) => {
+  try {
+    const connection = getConnectionPool(); // Replace with your connection pool function
+      
+     const [res]=  await connection.query("SELECT * FROM User");
+    res.status(200).json({ message: `Database connection is working ${res}` });
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({ error: "Database connection error" });
+  }
 });
+
+// app.get("/", (req, res) => {
+//   res.json({
+//     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
+//   });
+// });
 app.get("/seed", async (req, res) => {
   try {
     // await req.connect.query("SET FOREIGN_KEY_CHECKS = 0");
