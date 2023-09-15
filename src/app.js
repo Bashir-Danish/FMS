@@ -45,7 +45,7 @@ app.use(
   cors({
     origin: function (req, callback) {
       var corsOptions;
-      if (whitelist.indexOf(req.header('Origin')) !== -1) {
+      if (allowedDomains.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true } 
       } else {
         corsOptions = { origin: false } 
@@ -57,6 +57,7 @@ app.use(
     optionsSuccessStatus: 204, 
   })
 );
+
 
 
 app.use(helmet());
