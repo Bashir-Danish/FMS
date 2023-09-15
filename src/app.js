@@ -33,10 +33,7 @@ createConnections();
 app.use(morgan("dev"));
 
 
-app.use((req, res, next) => {
-  req.headers.origin = req.headers.origin || req.headers.host;
-  next();
-});
+
 
 const allowedDomains = [
   "https://api.kdanish.com",
@@ -46,9 +43,15 @@ const allowedDomains = [
 
 app.use(
   cors({
-    origin: ["https://api.kdanish.com",
-    "https://app.kdanish.com",
-    "http://localhost:5173",], 
+    origin: function (req, callback) {
+      var corsOptions;
+      if (whitelist.indexOf(req.header('Origin')) !== -1) {
+        corsOptions = { origin: true } 
+      } else {
+        corsOptions = { origin: false } 
+      }
+      callback(null, corsOptions) 
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, 
     optionsSuccessStatus: 204, 
