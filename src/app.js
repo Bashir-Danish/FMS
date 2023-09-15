@@ -45,6 +45,7 @@ app.use(
     origin: function (req, callback) {
       var corsOptions;
       if (allowedDomains.indexOf(req.headers.origin) !== -1) {
+        console.log(allowedDomains.indexOf(req.headers.origin) !== -1);
         corsOptions = { origin: true };
       } else {
         corsOptions = { origin: false };
