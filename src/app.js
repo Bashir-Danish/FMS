@@ -34,6 +34,11 @@ const allowedDomains = [
   "https://app.kdanish.com",
   "http://localhost:5173",
 ];
+app.use((req, res, next) => {
+  req.headers.origin = req.headers.origin || req.headers.host;
+  console.log(req.headers.origin);
+  next();
+});
 
 app.use(
   cors({
