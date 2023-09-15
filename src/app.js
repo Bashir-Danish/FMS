@@ -46,7 +46,9 @@ const allowedDomains = [
 
 app.use(
   cors({
-    origin: ['https://app.kdanish.com', 'http://localhost:5173'], 
+    origin: ["https://api.kdanish.com",
+    "https://app.kdanish.com",
+    "http://localhost:5173",], 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, 
     optionsSuccessStatus: 204, 
@@ -81,7 +83,11 @@ app.use(
 );
 
 
-
+app.get('/', (req, res) => {
+  res.json({
+    message: '🦄🌈✨👋🌎🌍🌏✨🌈🦄',
+  });
+});
 
 function generateUniqueFilename() {
   const timestamp = new Date().getTime();
@@ -199,6 +205,14 @@ app.get("/seed", async (req, res) => {
     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
   });
 });
+
+app.use("/api/v1/departments", departmentRouter);
+app.use("/api/v1/semesters", semesterRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/students", studentRouter);
+app.use("/api/v1/subjects", subjectRouter);
+app.use("/api/v1/enrolls", enrollRouter);
+
 
 app.use(errorHandler);
 
