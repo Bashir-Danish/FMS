@@ -76,7 +76,7 @@ export async function createConnections() {
       password VARCHAR(255),
       picture VARCHAR(255),
       refreshToken VARCHAR(255),
-      userType ENUM('ادمین','کاربر','استاد') DEFAULT 'کاربر'
+      userType ENUM('admin','user','teacher') DEFAULT 'user'
     );
   `);
     await connectionPool1.query(`
@@ -131,7 +131,7 @@ export async function createConnections() {
     const adminLastName = "danish";
     const adminEmail = "bashirdanish124@gmail.com";
     const adminPassword = await bcrypt.hash("dos1234", 10);
-    const adminUserType = "ادمین";
+    const adminUserType = "admin";
 
     // Execute the insert query
     const [result] = await connectionPool1.query(insertQuery, [

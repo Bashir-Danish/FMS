@@ -13,7 +13,6 @@ export const getAllUsers = async (req, res) => {
     `;
     const [users] = await conn.query(query);
 
-
     res.status(200).json({ users: users });
   } catch (error) {
     console.error("Error retrieving users:", error);
@@ -27,9 +26,12 @@ function generateUniqueFilename() {
   return `image_${timestamp}_${random}`;
 }
 export const createUser = async (req, res) => {
-  const { name, lastName, email, password, userType,imagePath } = req.body;
+  const { name, lastName, email, password, userType, imagePath } = req.body;
   const conn = req.connect;
-   
+
+ 
+  console.log(userType);
+
   try {
     const checkQuery = `
       SELECT * FROM User WHERE email = ?
@@ -47,40 +49,25 @@ export const createUser = async (req, res) => {
         hashedPassword = await bcrypt.hash(password, 10);
       }
       let user_Id;
-      let insertQuery;
-      if (!userType) {
-        insertQuery = `
-        INSERT INTO User (name, lastName, email, password,picture)
-        VALUES (?, ?, ?, ?,?)
-      `;
-        const [result] = await conn.query(insertQuery, [
-          name,
-          lastName,
-          email,
-          hashedPassword,
-          imagePath,
-        ]);
 
-        user_Id = result.insertId;
-      } else {
-        insertQuery = `
-        INSERT INTO User (name, lastName, email, password,userType ,picture)
-        VALUES (?, ?, ?, ?,? ,?)
+      const insertQuery = `
+      INSERT INTO User (name, lastName, email, password, userType, picture)
+      VALUES (?, ?, ?, ?, ?, ?)
       `;
-        const [result] = await conn.query(insertQuery, [
-          name,
-          lastName,
-          email,
-          hashedPassword,
-          userType,
-          imagePath,
-        ]);
 
-        user_Id = result.insertId;
-      }
+      const [result] = await conn.query(insertQuery, [
+        name,
+        lastName,
+        email,
+        hashedPassword,
+        userType,
+        imagePath,
+      ]);
+
+      user_Id = result.insertId;
 
       const selectQuery = `
-        SELECT user_id, name, lastName, email, userType ,picture FROM User WHERE user_id = ?
+        SELECT user_id, name, lastName, email, userType, picture FROM User WHERE user_id = ?
       `;
       const [userData] = await conn.query(selectQuery, [user_Id]);
       const user = userData[0];
@@ -95,9 +82,16 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, lastName, email, password, userType ,imagePath} = req.body;
+  const { name, lastName, email, password, userType, imagePath } = req.body;
   const conn = req.connect;
-  let newFilePath = null;
+  console.log(userType);
+  const userTypeMapping = {
+    استاد: "teacher",
+    ادمین: "admin",
+    کاربر: "user",
+  };
+
+  userType ?? userTypeMapping[userType];
 
   try {
     const getUserQuery = `
@@ -112,7 +106,6 @@ export const updateUser = async (req, res) => {
 
     const user = userRows[0];
 
-
     let hashedPassword;
     if (password !== "undefined" && password !== "") {
       hashedPassword = await bcrypt.hash(password, 10);
@@ -121,8 +114,8 @@ export const updateUser = async (req, res) => {
     }
 
     const updatedFields = {
-      name:  name ?? user.name,
-      lastName: lastName ??  user.lastName,
+      name: name ?? user.name,
+      lastName: lastName ?? user.lastName,
       userType: userType ?? user.userType,
       email: email ?? user.email,
       password: hashedPassword,
@@ -246,13 +239,15 @@ export const login = async (req, res) => {
   }
 };
 
+
+// Your getUserById function
 export const getUserById = async (req, res) => {
   const { id } = req.params;
   const conn = req.connect;
 
   try {
     const query = `
-      SELECT * FROM User WHERE user_id = ?
+      SELECT user_id, name, lastName, email, picture, userType FROM User WHERE user_id = ?
     `;
     const [users] = await conn.query(query, [id]);
 
@@ -262,7 +257,10 @@ export const getUserById = async (req, res) => {
 
     const user = users[0];
 
-    res.json(user);
+    delete user.password;
+    delete user.refreshToken;
+
+    res.status(200).json({user:user});
   } catch (error) {
     console.error("Error retrieving user:", error);
     res.status(500).json({ error: "Internal server error" });

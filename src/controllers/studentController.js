@@ -8,7 +8,6 @@ export const getStudents = async (req, res) => {
         SELECT * FROM Student
       `;
     const [students] = await conn.query(query);
-    console.log(students);
     res.status(200).json({ students: students });
   } catch (error) {
     console.error("Error retrieving students:", error);

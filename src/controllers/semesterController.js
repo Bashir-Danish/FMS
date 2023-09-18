@@ -5,7 +5,7 @@ import { Worker } from 'worker_threads';
 export const processEnrollment = async (req, res) => {
   try {
     const semesterIdsToProcess = req.body.semesterIdsToProcess; 
-    console.log(semesterIdsToProcess);
+
 
     const worker = new Worker('./src/controllers/process/enrollmentProcessor.js', {
       workerData: {
@@ -34,8 +34,6 @@ export const processEnrollment = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
 
 export const getSemesters = async (req, res) => {
   const conn = req.connect;
