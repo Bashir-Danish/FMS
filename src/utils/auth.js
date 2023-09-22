@@ -10,6 +10,7 @@ const generateAccessToken = (userId) => {
 
 export const isAuthenticatedUser = async (req, res, next) => {
   const accessToken = req.cookies.access_token;
+  console.log(accessToken);
   if (!accessToken) {
     return res
       .status(401)
@@ -22,13 +23,13 @@ export const isAuthenticatedUser = async (req, res, next) => {
     next();
   } catch (accessTokenError) {
     const decoded = jwt.decode(accessToken);
- 
+    console.log(decoded);
+
     try {
       const [userData] = await req.connect.query(
         "SELECT refreshToken FROM User WHERE user_id = ?",
         [decoded.userId]
       );
-
 
       if (!userData || !userData[0] || !userData[0].refreshToken) {
         return res
@@ -49,7 +50,7 @@ export const isAuthenticatedUser = async (req, res, next) => {
 
       const newAccessToken = generateAccessToken(decodedRefreshToken.userId);
 
-      res.cookie("access_token", newAccessToken,{
+      res.cookie("access_token", newAccessToken, {
         // httpOnly: true,
         sameSite: "strict",
       });
@@ -63,19 +64,6 @@ export const isAuthenticatedUser = async (req, res, next) => {
     }
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import jwt from "jsonwebtoken";
 // import { config } from "dotenv";
@@ -129,7 +117,7 @@ export const isAuthenticatedUser = async (req, res, next) => {
 //           message: "not match",
 //         });
 //       }
-    
+
 //       const accessToken = jwt.sign(
 //         {
 //           userId: decodedRefreshToken.userId,
