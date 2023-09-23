@@ -212,27 +212,27 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: "Invalid password" });
     }
     const accessToken = jwt.sign(
-      { userId: user.user_id },
-      process.env.SECRET_KEY,
-      { expiresIn: "1m" }
-    );
-
-    const refreshToken = jwt.sign(
-      { userId: user.user_id },
+      { userId: user.user_id , role:user.userType },
       process.env.SECRET_KEY,
       { expiresIn: remember ? "20d" : "5d" }
     );
-    await conn.query("UPDATE User SET refreshToken = ? WHERE user_id = ?", [
-      refreshToken,
-      user.user_id,
-    ]);
-    res.cookie("access_token", accessToken, {
-      // secure: true,
-      // httpOnly: true,
-      sameSite: "strict",
-    });
 
-    res.status(200).json({ message: "success" });
+    // const refreshToken = jwt.sign(
+    //   { userId: user.user_id },
+    //   process.env.SECRET_KEY,
+    //   { expiresIn: remember ? "20d" : "5d" }
+    // );
+    // await conn.query("UPDATE User SET refreshToken = ? WHERE user_id = ?", [
+    //   refreshToken,
+    //   user.user_id,
+    // ]);
+    // res.cookie("access_token", accessToken, {
+    //   // secure: true,
+    //   // httpOnly: true,
+    //   sameSite: "strict",
+    // });
+
+    res.status(200).json({ message: "success" ,token:accessToken });
   } catch (error) {
     console.error("Error logging in user:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -240,7 +240,6 @@ export const login = async (req, res) => {
 };
 
 
-// Your getUserById function
 export const getUserById = async (req, res) => {
   const { id } = req.params;
   const conn = req.connect;

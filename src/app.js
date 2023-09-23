@@ -27,7 +27,6 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
-  console.log(req.headers.origin);
   next();
 });
 
@@ -42,7 +41,6 @@ const whitelist = [
 // Create a cors middleware
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log(origin);
     if (!origin) {
       // Handle requests with no origin (e.g., same-origin requests)
       callback(null, true);

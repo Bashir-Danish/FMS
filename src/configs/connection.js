@@ -75,7 +75,6 @@ export async function createConnections() {
       email VARCHAR(255) UNIQUE,
       password VARCHAR(255),
       picture VARCHAR(255),
-      refreshToken VARCHAR(255),
       userType ENUM('admin','user','teacher') DEFAULT 'user'
     );
   `);
