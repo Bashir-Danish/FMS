@@ -27,8 +27,7 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
-  console.log(req.headers.origin);
-
+  console.log("Received URL:", req.headers.origin + req.originalUrl); 
   next();
 });
 
