@@ -56,7 +56,7 @@ app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+// app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
@@ -73,14 +73,9 @@ app.use(fileUpload());
 app.use(cookieParser());
 
 
-app.use('/uploads', cors(corsOptions), express.static(path.join(path.dirname(""), "./src/uploads/")));
+app.use('/uploads', express.static(path.join(path.dirname(""), "./src/uploads/")));
 
-app.options('/uploads', function (req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
-  res.setHeader("Access-Control-Allow-Headers", "*");
-  res.end();
-});
+
 app.get("/", (req, res) => {
   res.json({
     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
