@@ -34,20 +34,16 @@ app.use((req, res, next) => {
 
 createConnections();
 
-const whitelist = [
-  "http://app.kdanish.com",
-  "http://api.kdanish.com",
-  "http://localhost:5173",
-];
+const whitelist = [/^http:\/\/(app|api)\.kdanish\.com$/, /^http:\/\/localhost:5173$/];
 
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) {
       callback(null, true);
-    } else if (whitelist.indexOf(origin) !== -1) {
+    } else if (whitelist.some(regex => regex.test(origin))) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -76,11 +72,8 @@ app.use((req, res, next) => {
 app.use(fileUpload());
 app.use(cookieParser());
 
-app.use(
-  "/uploads",
-  express.static(path.join(path.dirname(""), "./src/uploads/"))
-);
 
+app.use('/uploads', cors(corsOptions), express.static(path.join(path.dirname(""), "./src/uploads/")));
 app.get("/", (req, res) => {
   res.json({
     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
