@@ -27,6 +27,8 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
+  console.log(req.headers.origin);
+
   next();
 });
 
@@ -45,7 +47,7 @@ const corsOptions = {
     } else if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(null , true);
+      callback(new Error("Not allowed by CORS"));
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -74,17 +76,10 @@ app.use((req, res, next) => {
 app.use(fileUpload());
 app.use(cookieParser());
 
-app.use("/uploads", (req, res, next) => {
-  const filePath = path.join(path.dirname(""), "./src/uploads/"); 
-
-  fs.access(filePath, fs.constants.R_OK, (err) => {
-    if (err) {
-      return res.status(404).json({ error: "File not found" });
-    }
-    res.sendFile(filePath);
-  });
-});
-
+app.use(
+  "/uploads",
+  express.static(path.join(path.dirname(""), "./src/uploads/"))
+);
 
 app.get("/", (req, res) => {
   res.json({
