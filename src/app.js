@@ -40,25 +40,20 @@ const whitelist = [
   "http://localhost:5173",
 ];
 
-
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log(origin);
-   if (!origin) {
+    if (!origin) {
       callback(null, true);
     } else if (whitelist.indexOf(origin) !== -1) {
-     
       callback(null, true);
     } else {
-
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
 };
-
 
 app.use(cors(corsOptions));
 
@@ -81,10 +76,17 @@ app.use((req, res, next) => {
 app.use(fileUpload());
 app.use(cookieParser());
 
-app.use(
-  "/uploads",
-  express.static(path.join(path.dirname(""), "./src/uploads/"))
-);
+app.use("/uploads", (req, res, next) => {
+  const filePath = path.join(path.dirname(""), "./src/uploads/", req.path);
+  
+  fs.access(filePath, fs.constants.R_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ error: "File not found" });
+    }
+    res.sendFile(filePath);
+  });
+});
+
 
 app.get("/", (req, res) => {
   res.json({
@@ -161,7 +163,7 @@ app.post("/api/v1/upload", async (req, res) => {
     );
     file.mv(filePath, (err) => {
       if (err) {
-        console.error(`Error moving file: ${err}`);       
+        console.error(`Error moving file: ${err}`);
       }
       res
         .status(200)
@@ -172,7 +174,6 @@ app.post("/api/v1/upload", async (req, res) => {
     res.status(200).json({ message: "File uploaded successfully", imagePath });
   }
 });
-
 
 app.get("/test", async (req, res) => {
   try {
