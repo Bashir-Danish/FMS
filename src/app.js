@@ -34,8 +34,8 @@ app.use((req, res, next) => {
 createConnections();
 // Define a list of allowed origins
 const whitelist = [
-  "http://api.kdanish.com",
   "http://app.kdanish.com",
+  "http://api.kdanish.com",
   "http://localhost:5173",
 ];
 
