@@ -21,14 +21,29 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import fs from "fs";
 
-
 config();
-
 
 const app = express();
 
+app.use((req, res, next) => {
+  req.headers.origin = req.headers.origin || req.headers.host;
+  next();
+});
 
 createConnections();
+// app.use(
+//   cors({
+//     origin: [
+//       "http://api.kdanish.com",
+//       "http://app.kdanish.com",
+//       "http://localhost:5173",
+//     ],
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     credentials: true,
+//     optionsSuccessStatus: 204,
+//   })
+// );
+app.use(cors());
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
@@ -38,46 +53,24 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 app.use((req, res, next) => {
   req.connect = getConnectionPool();
   req.connNum = req.connect === connectionPool1 ? 1 : 2;
   console.log(`Request received with connection number: ${req.connNum}`);
   next();
 });
-app.use((req, res, next) => {
-  req.headers.origin = req.headers.origin || req.headers.host;
-  next();
-});
-
-
-app.use(
-  cors({
-    origin: [
-    "http://api.kdanish.com",
-    "http://app.kdanish.com",
-    "http://localhost:5173"
-    ], 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, 
-    optionsSuccessStatus: 204, 
-  })
-  );
-
 
 app.use(fileUpload());
 app.use(cookieParser());
-
 
 app.use(
   "/uploads",
   express.static(path.join(path.dirname(""), "./src/uploads/"))
 );
 
-
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    message: '🦄🌈✨👋🌎🌍🌏✨🌈🦄',
+    message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
   });
 });
 
@@ -88,10 +81,8 @@ function generateUniqueFilename() {
   return `image_${timestamp}_${random}`;
 }
 
-
 app.post("/api/v1/upload", async (req, res) => {
   const { fileType, id } = req.body;
-
 
   if (!req.files || !fileType) {
     return res.status(400).json({
@@ -162,18 +153,18 @@ app.post("/api/v1/upload", async (req, res) => {
   }
 });
 
-
 app.get("/test", async (req, res) => {
   try {
     const [result] = await req.connect.query("SELECT * FROM User");
     console.log(result);
-    return res.status(200).json({ message: `Database connection is working ${result}` });
+    return res
+      .status(200)
+      .json({ message: `Database connection is working ${result}` });
   } catch (error) {
     console.error("Database connection error:", error);
     res.status(500).json({ error: `Database connection ${error}` });
   }
 });
-
 
 app.get("/seed", async (req, res) => {
   try {
@@ -202,7 +193,6 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/students", studentRouter);
 app.use("/api/v1/subjects", subjectRouter);
 app.use("/api/v1/enrolls", enrollRouter);
-
 
 app.use(errorHandler);
 
