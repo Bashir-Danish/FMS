@@ -40,18 +40,25 @@ const whitelist = [
 ];
 
 // Create a cors middleware
-var corsOptions = {
+const corsOptions = {
   origin: function (origin, callback) {
     console.log(origin);
-    if (whitelist.indexOf(origin) !== -1) {
+    if (!origin) {
+      // Handle requests with no origin (e.g., same-origin requests)
+      callback(null, true);
+    } else if (whitelist.indexOf(origin) !== -1) {
+      // Allow requests from whitelisted origins
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      // Reject requests from other origins
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  preflightContinue: false,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
   optionsSuccessStatus: 204,
 };
+``
 
 app.use(cors(corsOptions));
 
