@@ -58,7 +58,7 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 204,
 };
-``
+
 
 app.use(cors(corsOptions));
 
