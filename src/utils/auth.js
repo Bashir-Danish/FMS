@@ -6,7 +6,7 @@ export const isAuthenticatedUser = async (req, res, next) => {
     req.headers["authorization"] ||
     req.headers["x-token"] ||
     req.query.token;
-  console.log(token);
+
   if (!token) {
     return res
       .status(401)
@@ -19,7 +19,7 @@ export const isAuthenticatedUser = async (req, res, next) => {
       return res.status(401).json({ error: "Invalid token" });
     }
     req.decodedData = decoded;
-    console.log(decoded);
+
 
     next();
   });
