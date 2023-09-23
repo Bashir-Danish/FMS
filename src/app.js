@@ -27,28 +27,30 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
+  console.log(req.headers.origin);
+
   next();
 });
 
 createConnections();
-// Define a list of allowed origins
+
 const whitelist = [
   "http://app.kdanish.com",
   "http://api.kdanish.com",
   "http://localhost:5173",
 ];
 
-// Create a cors middleware
+
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log(origin);
     if (!origin) {
-      // Handle requests with no origin (e.g., same-origin requests)
       callback(null, true);
     } else if (whitelist.indexOf(origin) !== -1) {
-      // Allow requests from whitelisted origins
+     
       callback(null, true);
     } else {
-      // Reject requests from other origins
+
       callback(new Error('Not allowed by CORS'));
     }
   },
