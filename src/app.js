@@ -74,11 +74,19 @@ app.use(cookieParser());
 
 
 app.use('/uploads', cors(corsOptions), express.static(path.join(path.dirname(""), "./src/uploads/")));
+
+app.options('/uploads', function (req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  res.end();
+});
 app.get("/", (req, res) => {
   res.json({
     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
   });
 });
+
 
 function generateUniqueFilename() {
   const timestamp = new Date().getTime();
