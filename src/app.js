@@ -54,8 +54,8 @@ app.use((req, res, next) => {
 app.use(
   cors({
     origin: [
-    "https://api.kdanish.com",
-    "https://app.kdanish.com",
+    "http://api.kdanish.com",
+    "http://app.kdanish.com",
     "http://localhost:5173"
     ], 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

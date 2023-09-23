@@ -19,12 +19,10 @@ export const isAuthenticatedUser = async (req, res, next) => {
 
   try {
     jwt.verify(accessToken, process.env.SECRET_KEY);
-
     next();
   } catch (accessTokenError) {
     const decoded = jwt.decode(accessToken);
     console.log(decoded);
-
     try {
       const [userData] = await req.connect.query(
         "SELECT refreshToken FROM User WHERE user_id = ?",
@@ -41,15 +39,12 @@ export const isAuthenticatedUser = async (req, res, next) => {
         storedRefreshToken,
         process.env.SECRET_KEY
       );
-
       if (decoded.userId !== decodedRefreshToken.userId) {
         return res.status(401).json({
           message: "not match",
         });
       }
-
       const newAccessToken = generateAccessToken(decodedRefreshToken.userId);
-
       res.cookie("access_token", newAccessToken, {
         // httpOnly: true,
         sameSite: "strict",
