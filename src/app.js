@@ -75,8 +75,8 @@ app.use(fileUpload());
 app.use(cookieParser());
 
 app.use("/uploads", (req, res, next) => {
-  const filePath = path.join(path.dirname(""), "./src/uploads/", req.path);
-  
+  const filePath = path.join(path.dirname(""), "./src/uploads/"); 
+
   fs.access(filePath, fs.constants.R_OK, (err) => {
     if (err) {
       return res.status(404).json({ error: "File not found" });
