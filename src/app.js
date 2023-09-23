@@ -27,8 +27,6 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
-  console.log(req.headers.origin);
-
   next();
 });
 
@@ -47,7 +45,7 @@ const corsOptions = {
     } else if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(null , true);
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
