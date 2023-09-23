@@ -31,19 +31,31 @@ app.use((req, res, next) => {
 });
 
 createConnections();
-// app.use(
-//   cors({
-//     origin: [
-//       "http://api.kdanish.com",
-//       "http://app.kdanish.com",
-//       "http://localhost:5173",
-//     ],
-//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-//     credentials: true,
-//     optionsSuccessStatus: 204,
-//   })
-// );
-app.use(cors("*"));
+// Define a list of allowed origins
+const whitelist = [
+  "http://api.kdanish.com",
+  "http://app.kdanish.com",
+  "http://localhost:5173",
+];
+
+// Create a cors middleware
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      // Allow the request
+      callback(null, true);
+    } else {
+      // Reject the request with an error
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+// Use the cors middleware for all routes
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
