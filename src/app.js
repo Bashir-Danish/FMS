@@ -27,9 +27,10 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
-  console.log(req.headers.origin);
+  console.log("Request Origin:", req.headers.origin);
   next();
 });
+
 
 
 createConnections();
