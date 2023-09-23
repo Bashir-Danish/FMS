@@ -27,6 +27,7 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
+  console.log(req.headers.origin);
   next();
 });
 
@@ -40,12 +41,15 @@ const whitelist = [
 
 // Create a cors middleware
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      // Allow the request
+  origin: (origin, callback) => {
+    console.log(origin);
+    if (!origin) {
+      callback(null, true);
+    } else if (whitelist.indexOf(origin) !== -1) {
+      // Allow requests from whitelisted origins
       callback(null, true);
     } else {
-      // Reject the request with an error
+      // Reject requests from other origins
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -56,6 +60,7 @@ const corsOptions = {
 
 // Use the cors middleware for all routes
 app.use(cors(corsOptions));
+
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
