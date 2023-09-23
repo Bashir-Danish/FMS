@@ -31,6 +31,7 @@ app.use((req, res, next) => {
   next();
 });
 
+
 createConnections();
 // Define a list of allowed origins
 const whitelist = [
@@ -41,22 +42,12 @@ const whitelist = [
 
 // Create a cors middleware
 const corsOptions = {
-  origin: (origin, callback) => {
-    console.log(origin);
-    if (!origin) {
-      callback(null, true);
-    } else if (whitelist.indexOf(origin) !== -1) {
-      // Allow requests from whitelisted origins
-      callback(null, true);
-    } else {
-      // Reject requests from other origins
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
 };
+
 
 // Use the cors middleware for all routes
 app.use(cors(corsOptions));
