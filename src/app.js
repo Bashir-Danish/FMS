@@ -27,10 +27,9 @@ const app = express();
 
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
-  console.log("Request Origin:", req.headers.origin);
+  console.log(req.headers.origin);
   next();
 });
-
 
 
 createConnections();
@@ -42,16 +41,24 @@ const whitelist = [
 ];
 
 // Create a cors middleware
-const corsOptions = {
-  origin: "*",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
-
+var corsOptions = {
+  origin: function (origin, callback) {
+    
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
 
 // Use the cors middleware for all routes
-app.use(cors(corsOptions));
+app.use(cors({
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
+}));
 
 app.use(morgan("dev"));
 app.use(helmet());
