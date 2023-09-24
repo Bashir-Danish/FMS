@@ -28,6 +28,8 @@ const app = express();
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
   console.log("Received URL:", req.headers.origin + req.originalUrl); 
+  console.log("req.originalUrl:", req.originalUrl); 
+
   next();
 });
 
@@ -37,6 +39,8 @@ const whitelist = [/^http:\/\/(app|api)\.kdanish\.com$/, /^http:\/\/localhost:51
 
 const corsOptions = {
   origin: function (origin, callback) {
+  console.log("origin:", origin); 
+
     if (!origin) {
       callback(null, true);
     } else if (whitelist.some(regex => regex.test(origin))) {
