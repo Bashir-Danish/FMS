@@ -28,8 +28,6 @@ const app = express();
 app.use((req, res, next) => {
   req.headers.origin = req.headers.origin || req.headers.host;
   console.log("Received URL:", req.headers.origin + req.originalUrl); 
-  console.log("req.originalUrl:", req.originalUrl); 
-
   next();
 });
 
@@ -39,8 +37,6 @@ const whitelist = [/^http:\/\/(app|api)\.kdanish\.com$/, /^http:\/\/localhost:51
 
 const corsOptions = {
   origin: function (origin, callback) {
-  console.log("origin:", origin); 
-
     if (!origin) {
       callback(null, true);
     } else if (whitelist.some(regex => regex.test(origin))) {
@@ -59,7 +55,7 @@ app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+// app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
