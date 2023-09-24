@@ -54,12 +54,12 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
-app.use(cors("*"));
+app.use(cors(corsOptions));
 
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(express.json());
-// app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
