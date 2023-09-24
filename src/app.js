@@ -33,7 +33,9 @@ app.use((req, res, next) => {
 
 createConnections();
 
-const whitelist = [/^http:\/\/(app|api)\.kdanish\.com$/, /^http:\/\/localhost:5173$/];
+// const whitelist = [/^http:\/\/(app|api)\.kdanish\.com$/, /^http:\/\/localhost:5173$/];
+const whitelist = ['*']; 
+
 
 const corsOptions = {
   origin: function (origin, callback) {
