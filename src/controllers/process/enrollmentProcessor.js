@@ -19,7 +19,7 @@ async function enrollStudentsInSubjects(semesterId) {
   try {
     // console.log(semesterId);
     console.log(semesterId);
-    const semesterQuery = "SELECT * FROM Semester WHERE semester_id = ?";
+    const semesterQuery = "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
     const [semesters] = await conn.query(semesterQuery, [semesterId]);
     console.log(semesters);
     if (semesters.length === 0) {

@@ -25,32 +25,32 @@ config();
 
 const app = express();
 
-app.use((req, res, next) => {
-  req.headers.origin = req.headers.origin || req.headers.host;
-  console.log("Received URL:", req.headers.origin + req.originalUrl); 
-  next();
-});
+// app.use((req, res, next) => {
+//   req.headers.origin = req.headers.origin || req.headers.host;
+//   console.log("Received URL:", req.headers.origin + req.originalUrl); 
+//   next();
+// });
 
 createConnections();
 
 // const whitelist = [/^http:\/\/(app|api)\.kdanish\.com$/, /^http:\/\/localhost:5173$/];
-const whitelist = ['*']; 
+// const whitelist = ['*']; 
 
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) {
-      callback(null, true);
-    } else if (whitelist.some(regex => regex.test(origin))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin) {
+//       callback(null, true);
+//     } else if (whitelist.some(regex => regex.test(origin))) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//   credentials: true,
+//   optionsSuccessStatus: 204,
+// };
 
 app.use(cors("*"));
 
@@ -86,7 +86,7 @@ app.get("/", (req, res) => {
 
 function generateUniqueFilename() {
   const timestamp = new Date().getTime();
-  const random = Math.floor(Math.random() * 100000000);
+  const random = Math.floor(Math.random() * 1000);
 
   return `image_${timestamp}_${random}`;
 }
@@ -186,7 +186,7 @@ app.get("/seed", async (req, res) => {
     // await req.connect.query("DROP TABLE IF EXISTS Student");
     // await req.connect.query("DROP TABLE IF EXISTS User");
     // await req.connect.query("DROP TABLE IF EXISTS Subject");
-    await req.connect.query("DROP TABLE IF EXISTS Enrollment");
+    // await req.connect.query("DROP TABLE IF EXISTS Enrollment");
     // await req.connect.query("DROP TABLE IF EXISTS SemesterRegistration");
     // await req.connect.query("SET FOREIGN_KEY_CHECKS = 1");
     console.log("All tables dropped successfully");

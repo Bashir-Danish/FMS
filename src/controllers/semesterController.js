@@ -41,6 +41,7 @@ export const getSemesters = async (req, res) => {
   try {
     const query = "SELECT * FROM Semester";
     const [rows] = await conn.query(query);
+    console.log(rows);
     res.json(rows);
   } catch (error) {
     console.error("Error retrieving semesters:", error);
@@ -76,18 +77,19 @@ export const createSemester = async (req, res) => {
 export const updateSemester = async (req, res) => {
   const conn = req.connect;
   const { id } = req.params;
-  const { name, year, semester_number } = req.body;
+  const { name, year, semester_number,is_passed } = req.body;
+  console.log(req.body);
 
   try {
     const queryCheck = "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
     const [existingRows] = await conn.query(queryCheck, [name, year, semester_number]);
 
-    if (existingRows.length > 0) {
-      return res.status(409).json({ error: "این ترم از قبل وجود دارد" });
+    if (existingRows.length === 0) {
+      return res.status(404).json({ error: "این ترم یافت نشد" });
     }
 
-    const updateQuery = "UPDATE Semester SET name = ?, year = ?, semester_number = ? WHERE semester_id = ?";
-    const [updateResult] = await conn.query(updateQuery, [name, year, semester_number, id]);
+    const updateQuery = "UPDATE Semester SET name = ?, year = ?, semester_number = ? ,is_passed = ?  WHERE semester_id = ?";
+    const [updateResult] = await conn.query(updateQuery, [name, year, semester_number,is_passed, id]);
 
     if (updateResult.affectedRows === 0) {
       return res.status(404).json({ error: "ترم مورد نظر یافت نشد" });

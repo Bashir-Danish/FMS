@@ -18,11 +18,16 @@ const dbConfig1 = {
 };
 
 const dbConfig2 = {
-  host: process.env.DB_HOST_2 || "localhost",
-  user: process.env.DB_USER_2 || "root",
-  password: process.env.DB_PASSWORD_2 || "",
-  database: process.env.DB_NAME_2 || "FMS2",
+  host: process.env.DB_HOST_2 ,
+  user: process.env.DB_USER_2 ,
+  password: process.env.DB_PASSWORD_2,
+  database: process.env.DB_NAME_2 ,
 };
+
+// DB_HOST_1='190.92.190.16'
+// DB_USER_1='dos'
+// DB_PASSWORD_1='dos1234'
+// DB_NAME_1='Fms1'
 
 export let connectionPool1;
 export let connectionPool2;
@@ -32,7 +37,8 @@ export async function createConnections() {
   try {
     connectionPool1 = await createConnectionPool(dbConfig1);
 
-    // connectionPool2 = await createConnectionPool(dbConfig2);
+    // connectionPool1 = await createConnectionPool(dbConfig2);
+
     await connectionPool1.query(`
     CREATE TABLE IF NOT EXISTS Department (
       department_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,14 +48,16 @@ export async function createConnections() {
 
     // ok
     await connectionPool1.query(`
-  CREATE TABLE IF NOT EXISTS Semester (
-    semester_id INT AUTO_INCREMENT PRIMARY KEY,
-    name ENUM('بهاری', 'تابستانی', 'خزانی', 'زمستانی'),
-    year INT,
-    semester_number INT,
-    UNIQUE KEY unique_semester (year, semester_number)
-  );
-`);
+    CREATE TABLE IF NOT EXISTS Semester (
+      semester_id INT AUTO_INCREMENT PRIMARY KEY,
+      name ENUM('بهاری', 'تابستانی', 'خزانی', 'زمستانی'),
+      year INT,
+      semester_number INT,
+      is_passed BOOLEAN DEFAULT 0, 
+      UNIQUE KEY unique_semester (year, semester_number)
+    );
+  `);
+  
     // ok
     await connectionPool1.query(`
     CREATE TABLE IF NOT EXISTS Student (
