@@ -1,8 +1,8 @@
 import mysql from "mysql2/promise";
 import { Worker, parentPort, workerData } from "worker_threads";
-import {getConnectionPool} from '../../configs/connection.js'
+import { getConnectionPool } from "../../configs/connection.js";
 
-const dbConfig = {
+const dbConfig1 = {
   host: process.env.DB_HOST_1,
   user: process.env.DB_USER_1,
   password: process.env.DB_PASSWORD_1,
@@ -15,35 +15,46 @@ const dbConfig = {
 //   database: "Fms1",
 // };
 async function enrollStudentsInSubjects(semesterId) {
-  const conn = await mysql.createConnection(dbConfig);
+  const conn = await mysql.createConnection(dbConfig1);
   try {
     // console.log(semesterId);
     console.log(semesterId);
-    const semesterQuery = "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
+    const semesterQuery =
+      "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
     const [semesters] = await conn.query(semesterQuery, [semesterId]);
+    console.log("semesters");
     console.log(semesters);
     if (semesters.length === 0) {
       console.error(`Semester with ID ${semesterId} not found`);
       return `Semester with ID ${semesterId} not found`;
     }
-    
+
     const semester = semesters[0];
     const eligibleStudentsQuery = `
-      SELECT s.student_id, s.department_id, s.current_semester
-      FROM Student s
-      WHERE (s.current_semester = ? OR s.current_semester = ?) AND s.department_id IN (
-        SELECT department_id FROM Subject WHERE semester_id = ?
-      )
-    `;
+    SELECT s.student_id, s.department_id, s.current_semester
+    FROM Student s
+    WHERE 
+    s.current_semester = ? 
+    AND s.graduated = 0
+
+  `;
+    //  AND s.department_id IN (
+    //   SELECT department_id FROM Subject WHERE semester_id = ?
+    // )
     const [eligibleStudents] = await conn.query(eligibleStudentsQuery, [
-      0, 
-      semester.semester_number - 1, 
+      semester.semester_number - 1,
       semesterId,
     ]);
-
+    console.log("Query:", eligibleStudentsQuery);
+    console.log("Parameters:", [semester.semester_number - 1, semesterId]);
     console.log("eligibleStudents");
     console.log(eligibleStudents);
-    // Enroll eligible students in available subjects
+
+    if (eligibleStudents.length === 0) {
+      console.log("No eligible students found.");
+      return "No eligible students found for this semester.";
+    }
+
     for (const student of eligibleStudents) {
       if (student.current_semester === 0) {
         const subjectsQuery = `
@@ -114,6 +125,15 @@ async function enrollStudentsInSubjects(semesterId) {
         // console.log("Total credits of passed subjects:", totalCreditsPassed);
 
         if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
+          if (student.current_semester === 8) {
+            const updateGraduationQuery = `
+              UPDATE Student
+              SET graduated = 1
+              WHERE student_id = ?
+            `;
+            await conn.query(updateGraduationQuery, [student.student_id]);
+            console.log(`Student ID ${student.student_id} has graduated`);
+          }
           console.log(
             "this student can pass the semester" + student.student_id + " :",
             totalCreditsPassed >= Math.round(totalCredits / 2)
@@ -123,7 +143,7 @@ async function enrollStudentsInSubjects(semesterId) {
           SELECT s.subject_id, s.credit
           FROM Subject s
           WHERE s.semester_id = ? AND s.department_id = ?
-        `;
+          `;
           const [currentSemesterSubjects] = await conn.query(
             currentSemesterCreditsQuery,
             [semesterId, student.department_id]
@@ -131,7 +151,9 @@ async function enrollStudentsInSubjects(semesterId) {
 
           console.log("currentSemesterSubjects");
           console.log(currentSemesterSubjects);
-
+          if (currentSemesterSubjects.length === 0) {
+            return "No Subject found for this semester.";
+          }
           for (const subject of currentSemesterSubjects) {
             const enrollQuery = `
               INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)

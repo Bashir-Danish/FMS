@@ -180,15 +180,15 @@ app.get("/test", async (req, res) => {
 
 app.get("/seed", async (req, res) => {
   try {
-    // await req.connect.query("SET FOREIGN_KEY_CHECKS = 0");
+    await req.connect.query("SET FOREIGN_KEY_CHECKS = 0");
     // await req.connect.query("DROP TABLE IF EXISTS Department");
     // await req.connect.query("DROP TABLE IF EXISTS Semester");
-    // await req.connect.query("DROP TABLE IF EXISTS Student");
-    // await req.connect.query("DROP TABLE IF EXISTS User");
+    await req.connect.query("DROP TABLE IF EXISTS Student");
+    await req.connect.query("DROP TABLE IF EXISTS User");
     // await req.connect.query("DROP TABLE IF EXISTS Subject");
-    // await req.connect.query("DROP TABLE IF EXISTS Enrollment");
-    // await req.connect.query("DROP TABLE IF EXISTS SemesterRegistration");
-    // await req.connect.query("SET FOREIGN_KEY_CHECKS = 1");
+    await req.connect.query("DROP TABLE IF EXISTS Enrollment");
+    await req.connect.query("DROP TABLE IF EXISTS SemesterRegistration");
+    await req.connect.query("SET FOREIGN_KEY_CHECKS = 1");
     console.log("All tables dropped successfully");
   } catch (error) {
     console.error("Error dropping tables:", error);

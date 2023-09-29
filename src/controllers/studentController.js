@@ -3,14 +3,35 @@ import fs from "fs";
 
 export const getStudents = async (req, res) => {
   const conn = req.connect;
+  const { departmentId, year } = req.query;
   try {
     const query = `
-        SELECT * FROM Student
-      `;
-    const [students] = await conn.query(query);
+    SELECT * FROM Student
+    WHERE department_id = ? AND year = ?
+  `;
+  const [students] = await conn.query(query, [departmentId, year]);
+    // const yearsQuery = `
+    //   SELECT DISTINCT year FROM Student
+    // `;
+    // const [yearsResult] = await await conn.query(yearsQuery);
+    // console.log(yearsResult);
     res.status(200).json({ students: students });
   } catch (error) {
     console.error("Error retrieving students:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+export const getYears = async (req, res) => {
+  const conn = req.connect;
+  try {
+    const yearsQuery = `
+      SELECT DISTINCT year FROM Student
+    `;
+    const [yearsResult] = await await conn.query(yearsQuery);
+
+    res.status(200).json({ years: yearsResult });
+  } catch (error) {
+    console.error("Error retrieving years:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -21,8 +42,16 @@ function generateUniqueFilename() {
   return `image_${timestamp}_${random}`;
 }
 export const createStudent = async (req, res) => {
-  const { name, fname, ssid, department_id, current_semester, imagePath } =
-    req.body;
+  const {
+    name,
+    fname,
+    ssid,
+    department_id,
+    current_semester,
+    imagePath,
+    year,
+  } = req.body;
+  console.log(req.body);
   const conn = req.connect;
 
   try {
@@ -38,18 +67,25 @@ export const createStudent = async (req, res) => {
     } else {
       let student_id;
       let insertQuery;
-      const queryValues = [name, fname, ssid, department_id, imagePath];
+      const queryValues = [
+        name,
+        fname,
+        ssid,
+        department_id,
+        imagePath,
+        parseFloat(year),
+      ];
 
       if (parseFloat(current_semester) !== 0) {
         insertQuery = `
-          INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture)
-          VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture,year)
+          VALUES (?, ?, ?, ?, ?, ?,?)
         `;
         queryValues.splice(4, 0, parseFloat(current_semester));
       } else {
         insertQuery = `
-          INSERT INTO Student (name, fname, ssid, department_id, picture)
-          VALUES (?, ?, ?, ?, ?)
+          INSERT INTO Student (name, fname, ssid, department_id, picture,year)
+          VALUES (?, ?, ?, ?, ?,?)
         `;
       }
 
@@ -57,7 +93,7 @@ export const createStudent = async (req, res) => {
       student_id = result.insertId;
 
       const selectQuery = `
-        SELECT student_id, name, fname, ssid, department_id, picture, current_semester FROM Student WHERE student_id = ?
+        SELECT * FROM Student WHERE student_id = ?
       `;
       const [studentData] = await conn.query(selectQuery, [student_id]);
       const student = studentData[0];
@@ -95,10 +131,10 @@ export const getStudentById = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   const { id } = req.params;
-  const { name, fname, ssid, department_id, current_semester , imagePath} = req.body;
+  const { name, fname, ssid, department_id, current_semester, imagePath } =
+    req.body;
   console.log(req.body);
   const conn = req.connect;
- 
 
   try {
     const getStudentQuery = `
@@ -145,9 +181,9 @@ export const updateStudent = async (req, res) => {
     fname, ssid, department_id;
 
     const updatedFields = {
-      name: name  ?? student.name,
+      name: name ?? student.name,
       fname: fname ?? student.fname,
-      ssid: ssid ??  student.ssid,
+      ssid: ssid ?? student.ssid,
       department_id:
         !isNaN(parseFloat(department_id)) !== undefined
           ? parseFloat(department_id)
@@ -225,5 +261,343 @@ export const deleteStudent = async (req, res) => {
   } catch (error) {
     console.error("Error deleting student:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+let names_array = [
+  "امیر",
+  "محمد",
+  "علی",
+  "حسین",
+  "مهدی",
+  "سعید",
+  "سامان",
+  "محمود",
+  "رضا",
+  "صادق",
+  "امید",
+  "فرهاد",
+  "کیان",
+  "مهراد",
+  "سیامک",
+  "بهروز",
+  "یوسف",
+  "فریدون",
+  "شاهین",
+  "عباس",
+  "رامین",
+  "بابک",
+  "پویا",
+  "رامتین",
+  "میلاد",
+  "علیرضا",
+  "امین",
+  "کاوه",
+  "کامران",
+  "شهروز",
+  "بهزاد",
+  "مازیار",
+  "علی‌اکبر",
+  "ناصر",
+  "بهمن",
+  "مهران",
+  "ماهان",
+  "سجاد",
+  "سعادت",
+  "محسن",
+  "احسان",
+  "مهدیار",
+  "سروش",
+  "مرتضی",
+  "محمدرضا",
+  "نوید",
+  "امیرحسین",
+  "آرش",
+  "سید",
+  "نیما",
+  "علی‌اصغر",
+  "محمدعلی",
+  "مصطفی",
+  "عماد",
+  "علی‌رضا",
+  "رضوان",
+  "علی‌رضا",
+  "وحید",
+  "جواد",
+  "محمدحسین",
+  "میثم",
+  "کمال",
+  "جمشید",
+  "احمد",
+  "فرزاد",
+  "مهرزاد",
+  "سام",
+  "محمدجواد",
+  "رضا",
+  "حمید",
+  "مهدی",
+  "حسن",
+  "قاسم",
+  "محمدصادق",
+  "جعفر",
+  "حمزه",
+  "عبدالله",
+  "رحیم",
+  "عباسعلی",
+  "محمدصالح",
+  "ابراهیم",
+  "حسینعلی",
+  "علیرضا",
+  "محمدرضا",
+  "علی‌محمد",
+  "محمدعباس",
+  "رضاحسین",
+  "سعیدمحمد",
+  "حسن",
+  "حسین",
+  "محمد",
+  "علی",
+  "حمید",
+  "مهدی",
+  "رضا",
+  "صادق",
+  "امیر",
+  "فرهاد",
+  "کیان",
+  "مهراد",
+  "سیامک",
+  "بهروز",
+  "یوسف",
+  "فریدون",
+  "شاهین",
+  "عباس",
+  "رامین",
+  "بابک",
+  "پویا",
+  "رامتین",
+  "میلاد",
+  "علیرضا",
+  "امین",
+  "کاوه",
+  "کامران",
+  "شهروز",
+  "بهزاد",
+  "مازیار",
+  "علی‌اکبر",
+  "ناصر",
+  "بهمن",
+  "مهران",
+  "ماهان",
+  "سجاد",
+  "سعادت",
+  "محسن",
+  "احسان",
+  "مهدیار",
+  "سروش",
+  "مرتضی",
+  "محمدرضا",
+  "نوید",
+  "امیرحسین",
+  "آرش",
+  "سید",
+  "علی‌اصغر",
+  "محمدعلی",
+  "مصطفی",
+  "عماد",
+  "علی‌رضا",
+  "رضوان",
+  "علی‌رضا",
+  "وحید",
+  "جواد",
+  "محمدحسین",
+  "میثم",
+  "کمال",
+  "جمشید",
+  "احمد",
+  "فرزاد",
+  "مهرزاد",
+  "سام",
+  "محمدجواد",
+  "رضا",
+  "حمید",
+  "مهدی",
+  "حسن",
+  "قاسم",
+  "محمدصادق",
+  "جعفر",
+  "حمزه",
+  "عبدالله",
+  "رحیم",
+  "عباسعلی",
+  "محمدصالح",
+  "ابراهیم",
+  "حسینعلی",
+  "علیرضا",
+  "محمدرضا",
+  "علی‌محمد",
+  "محمدعباس",
+  "رضاحسین",
+  "سعیدمحمد",
+];
+let father_names = [
+  "محمدرضا",
+  "علی‌اکبر",
+  "حسن",
+  "قاسم",
+  "جواد",
+  "کریم",
+  "حسینعلی",
+  "احمد",
+  "محمد",
+  "حمید",
+  "نورمحمد",
+  "رضا",
+  "امیرحسین",
+  "محمدجواد",
+  "عبدالله",
+  "اکبر",
+  "محسن",
+  "محمدعلی",
+  "اسماعیل",
+  "محمود",
+  "محمدحسین",
+  "مصطفی",
+  "رحیم",
+  "محمدرضوان",
+  "قاسمعلی",
+  "ابراهیم",
+  "جعفر",
+  "محمدصادق",
+  "ابراهیمعلی",
+  "علیرضا",
+  "محمد کیان",
+  "محمدصالح",
+  "احمدعلی",
+  "حسنعلی",
+  "عباسعلی",
+  "شریف",
+  "حمزه",
+  "عبدالحمید",
+  "ابراهیمحسین",
+  "جوادعلی",
+  "احمدحسین",
+  "محمدحسن",
+  "ابراهیمرضا",
+  "حسینرضا",
+  "محمدباقر",
+  "علی‌محمد",
+  "محمدعباس",
+  "رضاحسین",
+  "سعیدمحمد",
+  "حسن",
+  "حسین",
+  "محمد",
+  "علی",
+  "حمید",
+  "مهدی",
+  "رضا",
+  "صادق",
+  "امیر",
+  "فرهاد",
+  "کیان",
+  "مهراد",
+  "سیامک",
+  "بهروز",
+  "یوسف",
+  "فریدون",
+  "شاهین",
+  "عباس",
+  "رامین",
+  "بابک",
+  "پویا",
+  "رامتین",
+  "میلاد",
+  "علیرضا",
+  "امین",
+  "کاوه",
+  "کامران",
+  "شهروز",
+  "بهزاد",
+  "مازیار",
+  "علی‌اکبر",
+  "ناصر",
+  "بهمن",
+];
+
+export const seedStudent = async (req, res) => {
+  const { id } = req.params;
+  const conn = req.connect;
+  const departmentIds = [1, 2, 3];
+
+  let year = 1390;
+  let startingSsid = 98301;
+  const folderPath = "./src/uploads/images";
+  const sourceImageFolder = path.resolve(folderPath);
+  const imageFiles = fs.readdirSync(sourceImageFolder);
+
+  for (const departmentId of departmentIds) {
+    const students = [];
+    const numberOfStudents = Math.floor(Math.random() * (41 - 30) + 30);
+
+    const usedNames = new Set();
+
+    for (let i = 0; i < numberOfStudents; i++) {
+      let name;
+      do {
+        name = names_array[Math.floor(Math.random() * names_array.length)];
+      } while (usedNames.has(name));
+
+      let fname;
+      do {
+        fname = father_names[Math.floor(Math.random() * father_names.length)];
+      } while (usedNames.has(fname));
+
+      usedNames.add(name);
+      usedNames.add(fname);
+
+      const ssid = startingSsid++;
+
+      const randomImage =
+        imageFiles[Math.floor(Math.random() * imageFiles.length)];
+      const imagePath = `/uploads/students/${ssid}.jpg`;
+
+      const sourceImagePath = path.join(sourceImageFolder, randomImage);
+      const targetImagePath = path.join(
+        path.dirname(""),
+        `./src/uploads/students/${ssid}.jpg`
+      );
+      fs.copyFileSync(sourceImagePath, targetImagePath);
+
+      const picture = imagePath;
+      const currentSemester = 0;
+
+      const student = [
+        name,
+        fname,
+        ssid,
+        departmentId,
+        currentSemester,
+        picture,
+        year,
+      ];
+      students.push(student);
+    }
+
+    const insertQuery = `
+      INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture, year)
+      VALUES ?
+    `;
+
+    try {
+      await conn.query(insertQuery, [students]);
+      console.log(
+        `Inserted ${numberOfStudents} students into Department ${departmentId}`
+      );
+    } catch (error) {
+      console.error(
+        `Error inserting students into Department ${departmentId}:`,
+        error
+      );
+    }
   }
 };

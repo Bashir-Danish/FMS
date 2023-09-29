@@ -17,12 +17,12 @@ const dbConfig1 = {
   database: process.env.DB_NAME_1,
 };
 
-const dbConfig2 = {
-  host: process.env.DB_HOST_2 ,
-  user: process.env.DB_USER_2 ,
-  password: process.env.DB_PASSWORD_2,
-  database: process.env.DB_NAME_2 ,
-};
+// const dbConfig2 = {
+//   host: process.env.DB_HOST_2,
+//   user: process.env.DB_USER_2,
+//   password: process.env.DB_PASSWORD_2,
+//   database: process.env.DB_NAME_2,
+// };
 
 // DB_HOST_1='190.92.190.16'
 // DB_USER_1='dos'
@@ -57,7 +57,7 @@ export async function createConnections() {
       UNIQUE KEY unique_semester (year, semester_number)
     );
   `);
-  
+
     // ok
     await connectionPool1.query(`
     CREATE TABLE IF NOT EXISTS Student (
@@ -68,11 +68,13 @@ export async function createConnections() {
       department_id INT,
       current_semester INT DEFAULT 0,
       picture VARCHAR(255),
+      year INT,
+      graduated BOOLEAN DEFAULT 0, 
       FOREIGN KEY (department_id) REFERENCES Department(department_id)
-        ON DELETE RESTRICT ON UPDATE RESTRICT, 
+        ON DELETE RESTRICT ON UPDATE RESTRICT,
       UNIQUE INDEX unique_ssid (ssid)
-    );
-`);
+    );  
+  `);
 
     // ok
     await connectionPool1.query(`
