@@ -523,8 +523,8 @@ let father_names = [
   "ناصر",
   "بهمن",
 ];
-let startingSsid = 90100;
-let year = 1390;
+let startingSsid = 91100;
+let year = 1391;
 
 export const seedStudent = async (req, res) => {
   const { id } = req.params;
