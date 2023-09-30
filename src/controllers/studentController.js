@@ -571,7 +571,7 @@ export const seedStudent = async (req, res) => {
       fs.copyFileSync(sourceImagePath, targetImagePath);
 
       const picture = imagePath;
-      const currentSemester = 0;
+      const currentSemester = 1;
 
       const student = [
         name,
