@@ -179,6 +179,21 @@ async function enrollStudentsInSubjects(semesterId) {
           console.log(
             "can't passed the semester Student Id" + student.student_id
           );
+          const updatedCurrentSemester =
+            student.current_semester > 0 ? student.current_semester - 1 : 0;
+
+          const updateCurrentSemesterQuery = `
+            UPDATE Student
+            SET current_semester = ?
+            WHERE student_id = ?
+          `;
+          await conn.query(updateCurrentSemesterQuery, [
+            updatedCurrentSemester,
+            student.student_id,
+          ]);
+          console.log(
+            `Decreased current semester for student ID ${student.student_id}`
+          );
         }
       }
     }
