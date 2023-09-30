@@ -524,13 +524,14 @@ let father_names = [
   "بهمن",
 ];
 let startingSsid = 90100;
+let year = 1390;
 
 export const seedStudent = async (req, res) => {
   const { id } = req.params;
   const conn = req.connect;
   const departmentIds = [1, 2, 3];
 
-  let year = 1390;
+  year += 1;
   startingSsid += 1000;
   const folderPath = "./src/uploads/images";
   const sourceImageFolder = path.resolve(folderPath);
