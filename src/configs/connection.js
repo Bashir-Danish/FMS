@@ -66,7 +66,7 @@ export async function createConnections() {
       fname VARCHAR(255),
       ssid INT,
       department_id INT,
-      current_semester INT DEFAULT 0,
+      current_semester INT DEFAULT 1,
       picture VARCHAR(255),
       year INT,
       graduated BOOLEAN DEFAULT 0, 

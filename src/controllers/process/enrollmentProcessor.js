@@ -42,7 +42,7 @@ async function enrollStudentsInSubjects(semesterId) {
     //   SELECT department_id FROM Subject WHERE semester_id = ?
     // )
     const [eligibleStudents] = await conn.query(eligibleStudentsQuery, [
-      semester.semester_number - 1,
+      semester.semester_number == 1 ? semester.semester_number : semester.semester_number - 1 ,
       semesterId,
     ]);
     console.log("Query:", eligibleStudentsQuery);
@@ -56,7 +56,7 @@ async function enrollStudentsInSubjects(semesterId) {
     }
 
     for (const student of eligibleStudents) {
-      if (student.current_semester === 0) {
+      if (student.current_semester === 1) {
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s
@@ -76,15 +76,15 @@ async function enrollStudentsInSubjects(semesterId) {
             semesterId,
           ]);
         }
-        const updateCurrentSemesterQuery = `
-        UPDATE Student
-        SET current_semester = 1
-        WHERE student_id = ?
-        `;
-        await conn.query(updateCurrentSemesterQuery, [student.student_id]);
-        console.log(
-          `Subjects for student ID  ${student.student_id} current semester 0`
-        );
+        // const updateCurrentSemesterQuery = `
+        // UPDATE Student
+        // SET current_semester = 1
+        // WHERE student_id = ?
+        // `;
+        // await conn.query(updateCurrentSemesterQuery, [student.student_id]);
+        // console.log(
+        //   `Subjects for student ID  ${student.student_id} current semester 0`
+        // );
       } else {
         const getCurrentSemesterQuery = `
           SELECT 
