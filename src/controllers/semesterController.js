@@ -79,14 +79,17 @@ export const updateSemester = async (req, res) => {
   const { id } = req.params;
   const { name, year, semester_number,is_passed } = req.body;
   console.log(req.body);
+  console.log(id);
 
   try {
-    const queryCheck = "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
-    const [existingRows] = await conn.query(queryCheck, [name, year, semester_number]);
+    // const queryCheck = "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
+    // const [existingRows] = await conn.query(queryCheck, [name, year, semester_number]);
+    
+    // console.log(existingRows);
 
-    if (existingRows.length === 0) {
-      return res.status(404).json({ error: "این ترم یافت نشد" });
-    }
+    // if (existingRows.length === 0) {
+    //   return res.status(404).json({ error: "این ترم یافت نشد" });
+    // }
 
     const updateQuery = "UPDATE Semester SET name = ?, year = ?, semester_number = ? ,is_passed = ?  WHERE semester_id = ?";
     const [updateResult] = await conn.query(updateQuery, [name, year, semester_number,is_passed, id]);
