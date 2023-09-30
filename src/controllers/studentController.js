@@ -531,7 +531,7 @@ export const seedStudent = async (req, res) => {
   const departmentIds = [1, 2, 3];
 
   let year = 1390;
-  startingSsid = 90100+1000;
+  startingSsid += 90100+1000;
   const folderPath = "./src/uploads/images";
   const sourceImageFolder = path.resolve(folderPath);
   const imageFiles = fs.readdirSync(sourceImageFolder);
