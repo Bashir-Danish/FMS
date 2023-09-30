@@ -201,7 +201,7 @@ export const login = async (req, res) => {
     const [users] = await conn.query(query, [email]);
 
     if (users.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(401).json({ error: "کاربر یافت نشد" });
     }
 
     const user = users[0];
@@ -209,7 +209,7 @@ export const login = async (req, res) => {
     const isPassMatch = await bcrypt.compare(password, user.password);
 
     if (!isPassMatch) {
-      return res.status(401).json({ error: "Invalid password" });
+      return res.status(401).json({ error: "رمز عبور اشتباه است" });
     }
     const accessToken = jwt.sign(
       { userId: user.user_id , role:user.userType },
