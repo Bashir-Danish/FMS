@@ -247,10 +247,14 @@ async function enrollStudents(semesterId) {
 // Retrieve semester IDs from workerData
 const { semesterIdsArray } = workerData;
 
+
 (async () => {
   for (const semesterId of semesterIdsArray) {
     const result = await enrollStudents(semesterId);
     parentPort.postMessage(result);
   }
-  console.log(totalQueryResponseTime);
+  console.log("totalQueryResponseTime :", totalQueryResponseTime);
+
+  process.exit(0);
 })();
+
