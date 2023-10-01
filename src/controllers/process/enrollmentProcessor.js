@@ -33,7 +33,6 @@ async function toggleDbConfig() {
 
 async function runQuery(conn,query, params) {
 
-
 //  conn = await mysql.createConnection(currentDbConfig);
   const startTime = Date.now();
   try {
@@ -60,7 +59,7 @@ async function enrollStudents(semesterId) {
     const semesterQuery =
       "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
 
-    const semesters = await runQuery(semesterQuery, [semesterId]);
+    const semesters = await runQuery(conn,semesterQuery, [semesterId]);
 
     if (!semesters || semesters.length === 0) {
       // console.error(`Semester with ID ${semesterId} not found or query result is empty`);
@@ -83,7 +82,7 @@ async function enrollStudents(semesterId) {
     )
   `;
 
-    const eligibleStudents =await runQuery(eligibleStudentsQuery, [
+    const eligibleStudents =await runQuery(conn,eligibleStudentsQuery, [
       semester.semester_number == 1
         ? semester.semester_number
         : semester.semester_number - 1,
@@ -104,7 +103,7 @@ async function enrollStudents(semesterId) {
           FROM Subject s
           WHERE s.semester_id = ? AND s.department_id = ?
         `;
-        const studentSubjects = await runQuery(subjectsQuery, [
+        const studentSubjects = await runQuery(conn,subjectsQuery, [
           semesterId,
           student.department_id,
         ]);
@@ -112,7 +111,7 @@ async function enrollStudents(semesterId) {
         for (const subject of studentSubjects) {
           const enrollQuery =
             "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
-          await runQuery(enrollQuery, [
+          await runQuery(conn,enrollQuery, [
             student.student_id,
             subject.subject_id,
             semesterId,
@@ -138,7 +137,7 @@ async function enrollStudents(semesterId) {
         `;
 
         // Assuming you have the student's current semester number and student ID
-        const currentSemesterSubjects = await runQuery(
+        const currentSemesterSubjects = await runQuery(conn,
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
         );
@@ -170,7 +169,7 @@ async function enrollStudents(semesterId) {
               SET graduated = 1
               WHERE student_id = ?
             `;
-            await runQuery(updateGraduationQuery, [student.student_id]);
+            await runQuery(conn,updateGraduationQuery, [student.student_id]);
             // console.log(`Student ID ${student.student_id} has graduated`);
           }
           // console.log(
@@ -183,7 +182,7 @@ async function enrollStudents(semesterId) {
           FROM Subject s
           WHERE s.semester_id = ? AND s.department_id = ?
           `;
-          const currentSemesterSubjects = await runQuery(
+          const currentSemesterSubjects = await runQuery(conn,
             currentSemesterCreditsQuery,
             [semesterId, student.department_id]
           );
@@ -197,7 +196,7 @@ async function enrollStudents(semesterId) {
             const enrollQuery = `
               INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
             `;
-            await runQuery(enrollQuery, [
+            await runQuery(conn,enrollQuery, [
               student.student_id,
               subject.subject_id,
               semesterId,
@@ -210,7 +209,7 @@ async function enrollStudents(semesterId) {
             SET current_semester = current_semester + 1
             WHERE student_id = ?
           `;
-          await runQuery(updateCurrentSemesterQuery, [student.student_id]);
+          await runQuery(conn,updateCurrentSemesterQuery, [student.student_id]);
           console.log(
             `Enrolling student ID ${student.student_id} to the next semester`
           );
@@ -223,7 +222,7 @@ async function enrollStudents(semesterId) {
         //   SET year = year + 1
         //   WHERE student_id = ?
         // `;
-          // await runQuery(incrementYearQuery, [student.student_id]);
+          // await runQuery(conn,incrementYearQuery, [student.student_id]);
           // console.log(`Year incremented for student ID ${student.student_id}`);
         }
       }
