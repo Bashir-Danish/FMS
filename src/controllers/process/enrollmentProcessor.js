@@ -16,13 +16,14 @@ const dbConfig2 = {
   database: process.env.DB_NAME_2,
 };
 
-let currentDbConfig = dbConfig1;
+let currentDbConfig = dbConfig1; 
 let totalQueryResponseTime = 0;
 
 async function toggleDbConfig() {
   // currentDbConfig = currentDbConfig === dbConfig1 ? dbConfig2 : dbConfig1;
   currentDbConfig = dbConfig1;
 }
+
 
 async function runQuery(query, params) {
   const conn = await mysql.createConnection(currentDbConfig);
@@ -37,34 +38,15 @@ async function runQuery(query, params) {
   } finally {
     const endTime = Date.now();
     const queryResponseTime = endTime - startTime;
-    console.log(`Query response time: ${queryResponseTime} ms`);
-    totalQueryResponseTime += queryResponseTime;
+    totalQueryResponseTime += queryResponseTime; 
+    console.log(`response time: ${queryResponseTime} ms`);
+    console.log(`Total Query response time: ${totalQueryResponseTime} ms`);
     await toggleDbConfig();
+
   }
 }
-
-// async function runQuery(query, params) {
-//   try {
-//     const conn = await mysql.createConnection(currentDbConfig);
-
-//     const startTime = Date.now();
-//     const [result] = await conn.query(query, params);
-//     if (result === undefined) {
-//       throw new Error("Query result is undefined");
-//     }
-//     return result;
-//   } finally {
-//     const endTime = Date.now();
-//     const queryResponseTime = endTime - startTime;
-//     console.log(`Query response time: ${queryResponseTime} ms`);
-//     totalQueryResponseTime += queryResponseTime;
-//     conn.end();
-//     await toggleDbConfig();
-//   }
-// }
-
 async function enrollStudents(semesterId) {
-  // const conn = await mysql.createConnection(dbConfig1);
+
   try {
     const semesterQuery =
       "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
@@ -72,9 +54,7 @@ async function enrollStudents(semesterId) {
     const semesters = await runQuery(semesterQuery, [semesterId]);
 
     if (!semesters || semesters.length === 0) {
-      console.error(
-        `Semester with ID ${semesterId} not found or query result is empty`
-      );
+      // console.error(`Semester with ID ${semesterId} not found or query result is empty`);
       return `Semester with ID ${semesterId} not found or query result is empty`;
     }
     const semester = semesters[0];
@@ -94,7 +74,7 @@ async function enrollStudents(semesterId) {
     )
   `;
 
-    const eligibleStudents = await runQuery(eligibleStudentsQuery, [
+    const eligibleStudents =await runQuery(eligibleStudentsQuery, [
       semester.semester_number == 1
         ? semester.semester_number
         : semester.semester_number - 1,
@@ -102,13 +82,14 @@ async function enrollStudents(semesterId) {
     ]);
 
     if (eligibleStudents.length === 0) {
-      // console.log("No eligible students found.");
+      console.log("No eligible students found.");
       return "No eligible students found for this semester.";
     }
 
     for (const student of eligibleStudents) {
-      // // console.log(student.current_semester);
+      // console.log(student.current_semester);
       if (semester.semester_number < 2) {
+       
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s
@@ -128,7 +109,9 @@ async function enrollStudents(semesterId) {
             semesterId,
           ]);
         }
+ 
       } else {
+
         const getCurrentSemesterQuery = `
           SELECT 
               s.subject_id, 
@@ -163,10 +146,10 @@ async function enrollStudents(semesterId) {
           0
         );
 
-        // // console.log("Total credits in the current semester:", totalCredits);
-        // // console.log("Half of the total credits:", Math.round(totalCredits / 2));
-        //  // // console.log("Total credits of passed subjects:", totalCreditsPassed);
-        // // console.log(
+        // console.log("Total credits in the current semester:", totalCredits);
+        // console.log("Half of the total credits:", Math.round(totalCredits / 2));
+        //  // console.log("Total credits of passed subjects:", totalCreditsPassed);
+        // console.log(
         //   "Total credits of passed subjects:",
         //   totalCreditsPassed >= Math.round(totalCredits / 2)
         // );
@@ -179,9 +162,9 @@ async function enrollStudents(semesterId) {
               WHERE student_id = ?
             `;
             await runQuery(updateGraduationQuery, [student.student_id]);
-            // // console.log(`Student ID ${student.student_id} has graduated`);
+            // console.log(`Student ID ${student.student_id} has graduated`);
           }
-          // // console.log(
+          // console.log(
           //   "this student can pass the semester" + student.student_id + " :",
           //   totalCreditsPassed >= Math.round(totalCredits / 2)
           // );
@@ -196,8 +179,8 @@ async function enrollStudents(semesterId) {
             [semesterId, student.department_id]
           );
 
-          // // console.log("currentSemesterSubjects");
-          // // console.log(currentSemesterSubjects);
+          // console.log("currentSemesterSubjects");
+          // console.log(currentSemesterSubjects);
           if (currentSemesterSubjects.length === 0) {
             return "No Subject found for this semester.";
           }
@@ -226,11 +209,11 @@ async function enrollStudents(semesterId) {
           console.log(
             "can't passed the semester Student Id" + student.student_id
           );
-          //   const incrementYearQuery = `
-          //   UPDATE Student
-          //   SET year = year + 1
-          //   WHERE student_id = ?
-          // `;
+        //   const incrementYearQuery = `
+        //   UPDATE Student
+        //   SET year = year + 1
+        //   WHERE student_id = ?
+        // `;
           // await runQuery(incrementYearQuery, [student.student_id]);
           // console.log(`Year incremented for student ID ${student.student_id}`);
         }
@@ -247,13 +230,15 @@ async function enrollStudents(semesterId) {
 // Retrieve semester IDs from workerData
 const { semesterIdsArray } = workerData;
 
+// Import necessary modules and setup your code...
 
 (async () => {
   for (const semesterId of semesterIdsArray) {
     const result = await enrollStudents(semesterId);
     parentPort.postMessage(result);
   }
-  console.log("totalQueryResponseTime :", `${totalQueryResponseTime} ms`);
+  console.log("totalQueryResponseTime");
+  console.log(totalQueryResponseTime);
   process.exit(0);
 })();
 
