@@ -7,6 +7,7 @@ const dbConfig1 = {
   user: process.env.DB_USER_1,
   password: process.env.DB_PASSWORD_1,
   database: process.env.DB_NAME_1,
+  connectionLimit: 1500, 
 };
 
 const dbConfig2 = {
@@ -14,6 +15,7 @@ const dbConfig2 = {
   user: process.env.DB_USER_2,
   password: process.env.DB_PASSWORD_2,
   database: process.env.DB_NAME_2,
+  connectionLimit: 1500, 
 };
 
 let currentDbConfig = dbConfig1; 
