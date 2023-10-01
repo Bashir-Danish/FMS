@@ -32,7 +32,7 @@ async function toggleDbConfig() {
 
 
 async function runQuery(conn,query, params) {
-const conn = await mysql.createConnection(dbConfig1);
+
 
 //  conn = await mysql.createConnection(currentDbConfig);
   const startTime = Date.now();
