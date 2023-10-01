@@ -21,9 +21,9 @@ let totalQueryResponseTime = 0;
 
 let conn; 
 async function toggleDbConfig() {
-    if (conn) {
-      conn.close(); // Release the connection back to the pool
-    }
+    // if (conn) {
+    //   conn.close(); // Release the connection back to the pool
+    // }
   // currentDbConfig = currentDbConfig === dbConfig1 ? dbConfig2 : dbConfig1;
   currentDbConfig = dbConfig1;
 }
