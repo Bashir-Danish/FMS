@@ -19,15 +19,18 @@ const dbConfig2 = {
 let currentDbConfig = dbConfig1; 
 let totalQueryResponseTime = 0;
 
+let conn; 
 async function toggleDbConfig() {
+    if (conn) {
+      conn.close(); // Release the connection back to the pool
+    }
   // currentDbConfig = currentDbConfig === dbConfig1 ? dbConfig2 : dbConfig1;
   currentDbConfig = dbConfig1;
 }
 
 
 async function runQuery(query, params) {
-  const conn = await mysql.createConnection(currentDbConfig);
-
+ conn = await mysql.createConnection(currentDbConfig);
   const startTime = Date.now();
   try {
     const [result] = await conn.query(query, params);
@@ -43,6 +46,7 @@ async function runQuery(query, params) {
     console.log(`response time: ${queryResponseTime} ms`);
     console.log(`Total Query response time: ${totalQueryResponseTime} ms`);
     await toggleDbConfig();
+  
   }
 }
 async function enrollStudents(semesterId) {
@@ -219,7 +223,7 @@ async function enrollStudents(semesterId) {
         }
       }
     }
-
+    
     return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
   } catch (error) {
     console.error("Error enrolling students:", error);
@@ -237,8 +241,6 @@ const { semesterIdsArray } = workerData;
     const result = await enrollStudents(semesterId);
     parentPort.postMessage(result);
   }
-  console.log("totalQueryResponseTime");
-  console.log(totalQueryResponseTime);
   process.exit(0);
 })();
 
