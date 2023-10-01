@@ -102,12 +102,12 @@ async function enrollStudents(semesterId) {
     ]);
 
     if (eligibleStudents.length === 0) {
-      console.log("No eligible students found.");
+      // console.log("No eligible students found.");
       return "No eligible students found for this semester.";
     }
 
     for (const student of eligibleStudents) {
-      console.log(student.current_semester);
+      // // console.log(student.current_semester);
       if (semester.semester_number < 2) {
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
@@ -150,7 +150,7 @@ async function enrollStudents(semesterId) {
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
         );
-        console.log(currentSemesterSubjects);
+        // console.log(currentSemesterSubjects);
         const totalCredits = currentSemesterSubjects.reduce(
           (sum, subject) => sum + subject.credit,
           0
@@ -163,10 +163,10 @@ async function enrollStudents(semesterId) {
           0
         );
 
-        // console.log("Total credits in the current semester:", totalCredits);
-        // console.log("Half of the total credits:", Math.round(totalCredits / 2));
-        //  // console.log("Total credits of passed subjects:", totalCreditsPassed);
-        // console.log(
+        // // console.log("Total credits in the current semester:", totalCredits);
+        // // console.log("Half of the total credits:", Math.round(totalCredits / 2));
+        //  // // console.log("Total credits of passed subjects:", totalCreditsPassed);
+        // // console.log(
         //   "Total credits of passed subjects:",
         //   totalCreditsPassed >= Math.round(totalCredits / 2)
         // );
@@ -179,9 +179,9 @@ async function enrollStudents(semesterId) {
               WHERE student_id = ?
             `;
             await runQuery(updateGraduationQuery, [student.student_id]);
-            // console.log(`Student ID ${student.student_id} has graduated`);
+            // // console.log(`Student ID ${student.student_id} has graduated`);
           }
-          // console.log(
+          // // console.log(
           //   "this student can pass the semester" + student.student_id + " :",
           //   totalCreditsPassed >= Math.round(totalCredits / 2)
           // );
@@ -196,8 +196,8 @@ async function enrollStudents(semesterId) {
             [semesterId, student.department_id]
           );
 
-          // console.log("currentSemesterSubjects");
-          // console.log(currentSemesterSubjects);
+          // // console.log("currentSemesterSubjects");
+          // // console.log(currentSemesterSubjects);
           if (currentSemesterSubjects.length === 0) {
             return "No Subject found for this semester.";
           }
@@ -253,8 +253,7 @@ const { semesterIdsArray } = workerData;
     const result = await enrollStudents(semesterId);
     parentPort.postMessage(result);
   }
-  console.log("totalQueryResponseTime :", totalQueryResponseTime);
-
+  console.log("totalQueryResponseTime :", `${totalQueryResponseTime} ms`);
   process.exit(0);
 })();
 
