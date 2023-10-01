@@ -38,11 +38,10 @@ async function runQuery(query, params) {
   } finally {
     const endTime = Date.now();
     const queryResponseTime = endTime - startTime;
-    console.log("startTime" ,startTime);
-    console.log("endTime" ,endTime);
+   
     totalQueryResponseTime += queryResponseTime; 
     console.log(`response time: ${queryResponseTime} ms`);
-    console.log(`Total Query response time: ${totalQueryResponseTime}`);
+    console.log(`Total Query response time: ${totalQueryResponseTime} ms`);
     await toggleDbConfig();
   }
 }
