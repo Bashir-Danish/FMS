@@ -8,26 +8,44 @@ const dbConfig1 = {
   password: process.env.DB_PASSWORD_1,
   database: process.env.DB_NAME_1,
 };
-// const dbConfig = {
-//   host:  "192.168.1.250",
-//   user:  "dos",
-//   password:  "dos1234",
-//   database: "Fms1",
-// };
-async function enrollStudentsInSubjects(semesterId) {
-  const conn = await mysql.createConnection(dbConfig1);
+
+let totalQueryResponseTime = 0;
+const conn = await mysql.createConnection(dbConfig1);
+
+async function runQurey(query, params) {
+  const startTime = Date.now();
+  try {
+    const [result] = await runQurey(query, params);
+    if (result === undefined) {
+      throw new Error("Query result is undefined");
+    }
+    return result;
+  } finally {
+    const endTime = Date.now();
+    const queryResponseTime = endTime - startTime;
+    console.log(`Query response time: ${queryResponseTime} ms`);
+    totalQueryResponseTime += queryResponseTime; 
+  }
+}
+
+async function enrollStudents(semesterId) {
+  // const conn = await mysql.createConnection(dbConfig1);
   try {
     const semesterQuery =
       "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
-    const [semesters] = await conn.query(semesterQuery, [semesterId]);
-    console.log("semesters");
-    console.log(semesters);
-    if (semesters.length === 0) {
-      console.error(`Semester with ID ${semesterId} not found`);
-      return `Semester with ID ${semesterId} not found`;
-    }
 
+    const semesters = await runQurey(semesterQuery, [semesterId]);
+
+    if (!semesters || semesters.length === 0) {
+      console.error(`Semester with ID ${semesterId} not found or query result is empty`);
+      return `Semester with ID ${semesterId} not found or query result is empty`;
+    }
     const semester = semesters[0];
+
+    // if (!semester || !semester.semester_number) {
+    //   console.error(`Semester with ID ${semesterId} is missing semester_number`);
+    //   return `Semester with ID ${semesterId} is missing semester_number`;
+    // }
     const eligibleStudentsQuery = `
     SELECT s.student_id, s.department_id, s.current_semester
     FROM Student s
@@ -38,16 +56,13 @@ async function enrollStudentsInSubjects(semesterId) {
       SELECT department_id FROM Subject WHERE semester_id = ?
     )
   `;
-    const [eligibleStudents] = await conn.query(eligibleStudentsQuery, [
+
+    const eligibleStudents =await runQurey(eligibleStudentsQuery, [
       semester.semester_number == 1
         ? semester.semester_number
         : semester.semester_number - 1,
       semesterId,
     ]);
-    console.log("Query:", eligibleStudentsQuery);
-    console.log("Parameters:", [semester.semester_number - 1, semesterId]);
-    console.log("eligibleStudents");
-    console.log(eligibleStudents);
 
     if (eligibleStudents.length === 0) {
       console.log("No eligible students found.");
@@ -57,14 +72,13 @@ async function enrollStudentsInSubjects(semesterId) {
     for (const student of eligibleStudents) {
       console.log(student.current_semester);
       if (semester.semester_number < 2) {
-        console.log("111111111111");
-
+       
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s
           WHERE s.semester_id = ? AND s.department_id = ?
         `;
-        const [studentSubjects] = await conn.query(subjectsQuery, [
+        const studentSubjects = await runQurey(subjectsQuery, [
           semesterId,
           student.department_id,
         ]);
@@ -72,23 +86,15 @@ async function enrollStudentsInSubjects(semesterId) {
         for (const subject of studentSubjects) {
           const enrollQuery =
             "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
-          await conn.query(enrollQuery, [
+          await runQurey(enrollQuery, [
             student.student_id,
             subject.subject_id,
             semesterId,
           ]);
         }
-        // const updateCurrentSemesterQuery = `
-        // UPDATE Student
-        // SET current_semester = 1
-        // WHERE student_id = ?
-        // `;
-        // await conn.query(updateCurrentSemesterQuery, [student.student_id]);
-        // console.log(
-        //   `Subjects for student ID  ${student.student_id} current semester 0`
-        // );
+ 
       } else {
-        console.log("2");
+
         const getCurrentSemesterQuery = `
           SELECT 
               s.subject_id, 
@@ -106,7 +112,7 @@ async function enrollStudentsInSubjects(semesterId) {
         `;
 
         // Assuming you have the student's current semester number and student ID
-        const [currentSemesterSubjects] = await conn.query(
+        const currentSemesterSubjects = await runQurey(
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
         );
@@ -123,42 +129,41 @@ async function enrollStudentsInSubjects(semesterId) {
           0
         );
 
-        console.log("Total credits in the current semester:", totalCredits);
-        console.log("Half of the total credits:", Math.round(totalCredits / 2));
-        console.log("Total credits of passed subjects:", totalCreditsPassed);
-        console.log(
-          "Total credits of passed subjects:",
-          totalCreditsPassed >= Math.round(totalCredits / 2)
-        );
+        // console.log("Total credits in the current semester:", totalCredits);
+        // console.log("Half of the total credits:", Math.round(totalCredits / 2));
+        //  // console.log("Total credits of passed subjects:", totalCreditsPassed);
+        // console.log(
+        //   "Total credits of passed subjects:",
+        //   totalCreditsPassed >= Math.round(totalCredits / 2)
+        // );
 
         if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
-          console.log("if totalCreditsPassed");
           if (student.current_semester === 8) {
             const updateGraduationQuery = `
               UPDATE Student
               SET graduated = 1
               WHERE student_id = ?
             `;
-            await conn.query(updateGraduationQuery, [student.student_id]);
-            console.log(`Student ID ${student.student_id} has graduated`);
+            await runQurey(updateGraduationQuery, [student.student_id]);
+            // console.log(`Student ID ${student.student_id} has graduated`);
           }
-          console.log(
-            "this student can pass the semester" + student.student_id + " :",
-            totalCreditsPassed >= Math.round(totalCredits / 2)
-          );
+          // console.log(
+          //   "this student can pass the semester" + student.student_id + " :",
+          //   totalCreditsPassed >= Math.round(totalCredits / 2)
+          // );
 
           const currentSemesterCreditsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s
           WHERE s.semester_id = ? AND s.department_id = ?
           `;
-          const [currentSemesterSubjects] = await conn.query(
+          const currentSemesterSubjects = await runQurey(
             currentSemesterCreditsQuery,
             [semesterId, student.department_id]
           );
 
-          console.log("currentSemesterSubjects");
-          console.log(currentSemesterSubjects);
+          // console.log("currentSemesterSubjects");
+          // console.log(currentSemesterSubjects);
           if (currentSemesterSubjects.length === 0) {
             return "No Subject found for this semester.";
           }
@@ -166,7 +171,7 @@ async function enrollStudentsInSubjects(semesterId) {
             const enrollQuery = `
               INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
             `;
-            await conn.query(enrollQuery, [
+            await runQurey(enrollQuery, [
               student.student_id,
               subject.subject_id,
               semesterId,
@@ -179,7 +184,7 @@ async function enrollStudentsInSubjects(semesterId) {
             SET current_semester = current_semester + 1
             WHERE student_id = ?
           `;
-          await conn.query(updateCurrentSemesterQuery, [student.student_id]);
+          await runQurey(updateCurrentSemesterQuery, [student.student_id]);
           console.log(
             `Enrolling student ID ${student.student_id} to the next semester`
           );
@@ -187,19 +192,13 @@ async function enrollStudentsInSubjects(semesterId) {
           console.log(
             "can't passed the semester Student Id" + student.student_id
           );
-          console.log(
-            "can't passed the semester Student Id" + student.student_id
-          );
-
-          // Increment the year column for the student
-          const incrementYearQuery = `
-          UPDATE Student
-          SET year = year + 1
-          WHERE student_id = ?
-        `;
-
-          await conn.query(incrementYearQuery, [student.student_id]);
-          console.log(`Year incremented for student ID ${student.student_id}`);
+        //   const incrementYearQuery = `
+        //   UPDATE Student
+        //   SET year = year + 1
+        //   WHERE student_id = ?
+        // `;
+          // await runQurey(incrementYearQuery, [student.student_id]);
+          // console.log(`Year incremented for student ID ${student.student_id}`);
         }
       }
     }
@@ -218,7 +217,8 @@ const { semesterIdsArray } = workerData;
 
 (async () => {
   for (const semesterId of semesterIdsArray) {
-    const result = await enrollStudentsInSubjects(semesterId);
+    const result = await enrollStudents(semesterId);
     parentPort.postMessage(result);
   }
+  console.log(totalQueryResponseTime);
 })();
