@@ -30,7 +30,9 @@ async function toggleDbConfig() {
 
 
 async function runQuery(query, params) {
- conn = await mysql.createConnection(currentDbConfig);
+const conn = await mysql.createConnection(dbConfig1);
+
+//  conn = await mysql.createConnection(currentDbConfig);
   const startTime = Date.now();
   try {
     const [result] = await conn.query(query, params);
@@ -50,6 +52,7 @@ async function runQuery(query, params) {
   }
 }
 async function enrollStudents(semesterId) {
+//  conn = await mysql.createConnection(currentDbConfig);
 
   try {
     const semesterQuery =
