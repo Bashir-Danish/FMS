@@ -241,9 +241,7 @@ async function enrollStudents(semesterId) {
   } catch (error) {
     console.error("Error enrolling students:", error);
     return `Error enrolling students for semester ID ${semesterId}: ${error.message}`;
-  } finally {
-    conn.end();
-  }
+  } 
 }
 
 // Retrieve semester IDs from workerData
