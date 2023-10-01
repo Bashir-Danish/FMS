@@ -17,8 +17,6 @@ const dbConfig1 = {
 async function enrollStudentsInSubjects(semesterId) {
   const conn = await mysql.createConnection(dbConfig1);
   try {
-    // console.log(semesterId);
-    console.log(semesterId);
     const semesterQuery =
       "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
     const [semesters] = await conn.query(semesterQuery, [semesterId]);
@@ -36,13 +34,14 @@ async function enrollStudentsInSubjects(semesterId) {
     WHERE 
     s.current_semester = ? 
     AND s.graduated = 0
-
+      AND s.department_id IN (
+      SELECT department_id FROM Subject WHERE semester_id = ?
+    )
   `;
-    //  AND s.department_id IN (
-    //   SELECT department_id FROM Subject WHERE semester_id = ?
-    // )
     const [eligibleStudents] = await conn.query(eligibleStudentsQuery, [
-      semester.semester_number == 1 ? semester.semester_number : semester.semester_number - 1 ,
+      semester.semester_number == 1
+        ? semester.semester_number
+        : semester.semester_number - 1,
       semesterId,
     ]);
     console.log("Query:", eligibleStudentsQuery);
@@ -56,7 +55,10 @@ async function enrollStudentsInSubjects(semesterId) {
     }
 
     for (const student of eligibleStudents) {
-      if (student.current_semester === 1) {
+      console.log(student.current_semester);
+      if (semester.semester_number < 2) {
+        console.log("111111111111");
+
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s
@@ -86,6 +88,7 @@ async function enrollStudentsInSubjects(semesterId) {
         //   `Subjects for student ID  ${student.student_id} current semester 0`
         // );
       } else {
+        console.log("2");
         const getCurrentSemesterQuery = `
           SELECT 
               s.subject_id, 
@@ -107,7 +110,7 @@ async function enrollStudentsInSubjects(semesterId) {
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
         );
-        // console.log(currentSemesterSubjects);
+        console.log(currentSemesterSubjects);
         const totalCredits = currentSemesterSubjects.reduce(
           (sum, subject) => sum + subject.credit,
           0
@@ -120,11 +123,16 @@ async function enrollStudentsInSubjects(semesterId) {
           0
         );
 
-        // console.log("Total credits in the current semester:", totalCredits);
-        // console.log("Half of the total credits:", Math.round(totalCredits / 2));
-        // console.log("Total credits of passed subjects:", totalCreditsPassed);
+        console.log("Total credits in the current semester:", totalCredits);
+        console.log("Half of the total credits:", Math.round(totalCredits / 2));
+        console.log("Total credits of passed subjects:", totalCreditsPassed);
+        console.log(
+          "Total credits of passed subjects:",
+          totalCreditsPassed >= Math.round(totalCredits / 2)
+        );
 
         if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
+          console.log("if totalCreditsPassed");
           if (student.current_semester === 8) {
             const updateGraduationQuery = `
               UPDATE Student
@@ -179,21 +187,19 @@ async function enrollStudentsInSubjects(semesterId) {
           console.log(
             "can't passed the semester Student Id" + student.student_id
           );
-          // const updatedCurrentSemester =
-          //   student.current_semester > 0 ? student.current_semester - 1 : 0;
+          console.log(
+            "can't passed the semester Student Id" + student.student_id
+          );
 
-          // const updateCurrentSemesterQuery = `
-          //   UPDATE Student
-          //   SET current_semester = ?
-          //   WHERE student_id = ?
-          // `;
-          // await conn.query(updateCurrentSemesterQuery, [
-          //   updatedCurrentSemester,
-          //   student.student_id,
-          // ]);
-          // console.log(
-          //   `Decreased current semester for student ID ${student.student_id}`
-          // );
+          // Increment the year column for the student
+          const incrementYearQuery = `
+          UPDATE Student
+          SET year = year + 1
+          WHERE student_id = ?
+        `;
+
+          await conn.query(incrementYearQuery, [student.student_id]);
+          console.log(`Year incremented for student ID ${student.student_id}`);
         }
       }
     }
