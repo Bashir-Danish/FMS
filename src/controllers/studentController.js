@@ -537,7 +537,7 @@ export const seedStudent = async (req, res) => {
 
   for (const departmentId of departmentIds) {
     const students = [];
-    const numberOfStudents = Math.floor(Math.random() * (41 - 30) + 30);
+    const numberOfStudents = Math.floor(Math.random() * (41 - 35 + 1) + 35);
 
     const usedNames = new Set();
 

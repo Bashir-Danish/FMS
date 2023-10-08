@@ -136,7 +136,6 @@ async function enrollStudents(semesterId) {
           WHERE sem.semester_number = ? AND e.student_id = ?;
         `;
 
-        // Assuming you have the student's current semester number and student ID
         const currentSemesterSubjects = await runQuery(conn,
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
