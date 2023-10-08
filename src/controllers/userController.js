@@ -4,9 +4,8 @@ import path from "path";
 import fs from "fs";
 
 export const getAllUsers = async (req, res) => {
-  const conn = req.connect;
-
   try {
+    const conn = req.connect;
     const query = `
     SELECT user_id, name, lastName, email, userType, picture
     FROM User;
@@ -26,13 +25,9 @@ function generateUniqueFilename() {
   return `image_${timestamp}_${random}`;
 }
 export const createUser = async (req, res) => {
-  const { name, lastName, email, password, userType, imagePath } = req.body;
-  const conn = req.connect;
-
- 
-  console.log(userType);
-
+  const { name, lastName, email, password, userType, imagePath } = req.body;  
   try {
+    const conn = req.connect;
     const checkQuery = `
       SELECT * FROM User WHERE email = ?
     `;
@@ -83,17 +78,17 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const { name, lastName, email, password, userType, imagePath } = req.body;
-  const conn = req.connect;
   console.log(userType);
   const userTypeMapping = {
     استاد: "teacher",
     ادمین: "admin",
     کاربر: "user",
   };
-
+  
   userType ?? userTypeMapping[userType];
-
+  
   try {
+    const conn = req.connect;
     const getUserQuery = `
       SELECT * FROM User
       WHERE user_id = ?
@@ -192,9 +187,9 @@ export const deleteUser = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password, remember } = req.body;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const query = `
       SELECT * FROM User WHERE email = ?
     `;
@@ -216,22 +211,6 @@ export const login = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: remember ? "20d" : "5d" }
     );
-
-    // const refreshToken = jwt.sign(
-    //   { userId: user.user_id },
-    //   process.env.SECRET_KEY,
-    //   { expiresIn: remember ? "20d" : "5d" }
-    // );
-    // await conn.query("UPDATE User SET refreshToken = ? WHERE user_id = ?", [
-    //   refreshToken,
-    //   user.user_id,
-    // ]);
-    // res.cookie("access_token", accessToken, {
-    //   // secure: true,
-    //   // httpOnly: true,
-    //   sameSite: "strict",
-    // });
-
     res.status(200).json({ message: "success" ,token:accessToken });
   } catch (error) {
     console.error("Error logging in user:", error);
@@ -241,10 +220,10 @@ export const login = async (req, res) => {
 
 
 export const getUserById = async (req, res) => {
+  
   const { id } = req.params;
-  const conn = req.connect;
-
   try {
+    const conn = req.connect;
     const query = `
       SELECT user_id, name, lastName, email, picture, userType FROM User WHERE user_id = ?
     `;
@@ -265,45 +244,3 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-// export const createPost =catchAsync( async (req, res) => {
-
-//   const {title,content,likes,views,picture,author,categories} = req.body
-
-//     // author: 'f7a69df7a69f6af6afd9a',
-//     // picture: '/path/to/',
-//     // categories: ['f7a69df7a69f6af6afd9a', 'f7a69df7a69f6af6afd9a']
-
-//   try {
-//     // Check if the author exists // بری محکم کاری یه😂😂
-//     const authorExists = await User.exists({ _id: author });
-//     if (!authorExists) {
-//       console.error('Author does not exist');
-//       return;
-//     }
-
-//     // Check if all provided category ObjectIds exist
-//     const existingCategories = await Category.find({ _id: { $in: categories } });
-
-//     if (existingCategories.length !== categories.length) {
-//       console.error('Not all provided category ObjectIds exist');
-//       return;
-//     }
-
-//     // Create the new post
-//     const post = new Post({
-//       title:title,
-//       content:content,
-//       likes:likes,
-//       views:views,
-//       picture:picture,
-//       author:author
-//       ,categories:categories
-//     });
-//     await post.save();
-//     res.status(201).json({ post: post,message: "New post created successfully" });
-//     console.log('New post created successfully');
-//   } catch (error) {
-//     console.error('Error creating new post:', error);
-//   }
-// })

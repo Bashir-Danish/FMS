@@ -1,7 +1,7 @@
 export const getDepartments = async (req, res) => {
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const query = "SELECT * FROM Department";
     const [rows] = await conn.query(query);
     res.json(rows);
@@ -14,9 +14,9 @@ export const getDepartments = async (req, res) => {
 
 export const createDepartment = async (req, res) => {
   const { name } = req.body;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const checkQuery = "SELECT * FROM Department WHERE name = ?";
     const [departments] = await conn.query(checkQuery, [name]);
 
@@ -38,11 +38,11 @@ export const createDepartment = async (req, res) => {
 
 
 export const updateDepartment = async (req, res) => {
-  const conn = req.connect;
   const { id } = req.params;
   const { name } = req.body;
-
+  
   try {
+    const conn = req.connect;
     const query = "UPDATE Department SET name = ? WHERE department_id = ?";
     await conn.query(query, [name, id]);
     res.status(200).json({ message: "Department updated successfully" });
@@ -53,9 +53,9 @@ export const updateDepartment = async (req, res) => {
 };
 
 export const deleteDepartment = async (req, res) => {
-  const conn = req.connect;
   const { id } = req.params;
   try {
+    const conn = req.connect;
     const checkQuery = "SELECT * FROM Department WHERE department_id = ?";
     const [departments] = await conn.query(checkQuery, [id]);
 

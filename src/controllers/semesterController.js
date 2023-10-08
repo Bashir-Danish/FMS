@@ -75,13 +75,13 @@ export const createSemester = async (req, res) => {
 
 
 export const updateSemester = async (req, res) => {
-  const conn = req.connect;
   const { id } = req.params;
   const { name, year, semester_number,is_passed } = req.body;
   console.log(req.body);
   console.log(id);
-
+  
   try {
+    const conn = req.connect;
     // const queryCheck = "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
     // const [existingRows] = await conn.query(queryCheck, [name, year, semester_number]);
     

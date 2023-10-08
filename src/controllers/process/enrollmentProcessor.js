@@ -97,7 +97,7 @@ async function enrollStudents(semesterId) {
     for (const student of eligibleStudents) {
       // console.log(student.current_semester);
       if (semester.semester_number < 2) {
-       
+  
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s

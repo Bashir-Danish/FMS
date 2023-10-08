@@ -57,9 +57,9 @@ export const getSubjects = async (req, res) => {
 
 export const createSubject = async (req, res) => {
   const { department_id, semester_id, subjects } = req.body;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const checkExistingSubjectsQuery = `
       SELECT * FROM Subject
       WHERE department_id = ? AND semester_id = ?
@@ -139,9 +139,9 @@ export const createSubject = async (req, res) => {
 
 export const getById = async (req, res) => {
   const { id } = req.params;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const query = `
         SELECT * FROM Subject WHERE subject_id = ?
       `;
@@ -161,9 +161,9 @@ export const getById = async (req, res) => {
 export const updateSubject = async (req, res) => {
   const { id } = req.params;
   const { name ,credit} = req.body;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const query = "SELECT * FROM Subject WHERE subject_id = ?";
     const [Subjects] = await conn.query(query, [id]);
 
@@ -187,9 +187,9 @@ export const updateSubject = async (req, res) => {
 
 export const deleteSubjectsBySemester = async (req, res) => {
   const { semesterId, departmentId } = req.params;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const checkSemesterQuery = "SELECT * FROM Semester WHERE semester_id = ?";
     const [existingSemesters] = await conn.query(checkSemesterQuery, [
       semesterId,
@@ -214,9 +214,9 @@ export const deleteSubjectsBySemester = async (req, res) => {
 
 export const deleteSubjectById = async (req, res) => {
   const { subjectId } = req.params;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const deleteSubjectQuery = "DELETE FROM Subject WHERE subject_id = ?";
     const [result] = await conn.query(deleteSubjectQuery, [subjectId]);
 
@@ -234,9 +234,9 @@ export const deleteSubjectById = async (req, res) => {
 
 export const addSingleSubject = async (req, res) => {
   const { department_id, semester_id, name, credit } = req.body;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const insertQuery = `
       INSERT INTO Subject (department_id, semester_id, name, credit)
       VALUES (?, ?, ?, ?)

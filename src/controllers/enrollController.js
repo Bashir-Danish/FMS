@@ -2,10 +2,10 @@
 import { Worker ,isMainThread} from 'worker_threads';
 
 export const getEnrollments = async (req, res) => {
-    const conn = req.connect;
     const { semesterId, departmentId } = req.query; 
-
+    
     try {
+        const conn = req.connect;
         const subjectsQuery = `
             SELECT DISTINCT
                 Subject.subject_id,

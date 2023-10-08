@@ -133,10 +133,8 @@ export const updateStudent = async (req, res) => {
   const { id } = req.params;
   const { name, fname, ssid, department_id, current_semester, imagePath } =
     req.body;
-  console.log(req.body);
-  const conn = req.connect;
-
   try {
+    const conn = req.connect;
     const getStudentQuery = `
       SELECT * FROM Student
       WHERE student_id = ?
@@ -221,9 +219,9 @@ export const updateStudent = async (req, res) => {
 
 export const deleteStudent = async (req, res) => {
   const { id } = req.params;
-  const conn = req.connect;
-
+  
   try {
+    const conn = req.connect;
     const getStudentQuery = `
       SELECT * FROM Student WHERE student_id = ?
     `;
@@ -528,9 +526,9 @@ let year = 1389;
 
 export const seedStudent = async (req, res) => {
   const { id } = req.params;
-  const conn = req.connect;
   const departmentIds = [1, 2, 3];
-
+  
+  const conn = req.connect;
   year += 1;
   startingSsid += 1000;
   const folderPath = "./src/uploads/images";
