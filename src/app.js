@@ -63,12 +63,12 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.connect = getConnectionPool();
-  req.connNum = req.connect === connectionPool1 ? 1 : 2;
-  console.log(`Request received with connection number: ${req.connNum}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   req.connect = getConnectionPool();
+//   req.connNum = req.connect === connectionPool1 ? 1 : 2;
+//   console.log(`Request received with connection number: ${req.connNum}`);
+//   next();
+// });
 
 app.use(fileUpload());
 app.use(cookieParser());
