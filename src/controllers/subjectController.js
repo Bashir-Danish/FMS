@@ -1,7 +1,7 @@
+import { catchAsync } from "../middlewares.js";
+import { runQuery } from "../utils/query.js";
 
-export const getSubjects = async (req, res) => {
-  const conn = req.connect;
-
+export const getSubjects = catchAsync(async (req, res) => {
   try {
     const query = `
     SELECT
@@ -13,14 +13,13 @@ export const getSubjects = async (req, res) => {
     Subject.name AS subject_name,
     Subject.credit,
     Subject.department_id
-  FROM Semester
-  INNER JOIN Subject ON Semester.semester_id = Subject.semester_id
-  ORDER BY Semester.semester_id, Subject.subject_id;
-  
+    FROM Semester
+    INNER JOIN Subject ON Semester.semester_id = Subject.semester_id
+    ORDER BY Semester.semester_id, Subject.subject_id;
     `;
-    const [results] = await conn.query(query);
+    const { result, resTime } = await runQuery(query);
     const semestersMap = new Map();
-    results.forEach((row) => {
+    result.forEach((row) => {
       const semesterKey = `${row.semester_id}_${row.department_id}`;
       if (!semestersMap.has(semesterKey)) {
         semestersMap.set(semesterKey, {
@@ -44,7 +43,7 @@ export const getSubjects = async (req, res) => {
 
     const semestersWithSubjects = Array.from(semestersMap.values());
 
-    console.log(semestersWithSubjects);
+    console.log(`Response time : ${resTime} ms`);
     res.status(200).json({ subjects: semestersWithSubjects });
   } catch (error) {
     console.error(
@@ -53,35 +52,38 @@ export const getSubjects = async (req, res) => {
     );
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 
-export const createSubject = async (req, res) => {
+export const createSubject = catchAsync(async (req, res) => {
   const { department_id, semester_id, subjects } = req.body;
-  
+  let responseTime = 0;
   try {
-    const conn = req.connect;
     const checkExistingSubjectsQuery = `
       SELECT * FROM Subject
       WHERE department_id = ? AND semester_id = ?
     `;
-    const [existingSubjects] = await conn.query(checkExistingSubjectsQuery, [
-      department_id,
-      semester_id,
-    ]);
-
+    const { result: existingSubjects, resTime: t1 } = await runQuery(
+      checkExistingSubjectsQuery,
+      [department_id, semester_id]
+    );
+    responseTime += t1;
     if (existingSubjects.length > 0) {
-      return res
-        .status(400)
-        .json({
-          error: "Subjects with the same department and semester already exist",
-        });
+      return res.status(400).json({
+        error: "Subjects with the same department and semester already exist",
+      });
     }
     for (const [name, credit] of subjects) {
       const query = `
         INSERT INTO Subject (department_id, semester_id, name, credit)
         VALUES (?, ?, ?, ?)
       `;
-      await conn.query(query, [department_id, semester_id, name, credit]);
+      const { resTime: t2 } = await runQuery(query, [
+        department_id,
+        semester_id,
+        name,
+        credit,
+      ]);
+      responseTime += t2;
     }
 
     const selectQuery = `
@@ -99,12 +101,13 @@ export const createSubject = async (req, res) => {
     WHERE Semester.semester_id = ? AND Subject.department_id = ?
     ORDER BY Semester.semester_id, Subject.subject_id;
   `;
-    const [results] = await conn.query(selectQuery, [
+    const { result, resTime: t3 } = await runQuery(selectQuery, [
       semester_id,
       department_id,
     ]);
+    responseTime += t3;
     const semesterMap = new Map();
-    results.forEach((row) => {
+    result.forEach((row) => {
       const semesterKey = row.semester_id;
       if (!semesterMap.has(semesterKey)) {
         semesterMap.set(semesterKey, {
@@ -125,8 +128,8 @@ export const createSubject = async (req, res) => {
     });
 
     const updatedSemester = Array.from(semesterMap.values())[0];
+    console.log(`Response time : ${responseTime} ms`);
 
-    console.log(updatedSemester);
     res.status(201).json({
       message: "Subject created successfully",
       semesterWithSubjects: updatedSemester,
@@ -135,38 +138,37 @@ export const createSubject = async (req, res) => {
     console.error("Error creating subjects:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 
-export const getById = async (req, res) => {
+export const getById = catchAsync(async (req, res) => {
   const { id } = req.params;
-  
+
   try {
-    const conn = req.connect;
     const query = `
         SELECT * FROM Subject WHERE subject_id = ?
       `;
-    const [subject] = await conn.query(query, [id]);
+    const { result: subject, resTime } = await runQuery(query, [id]);
 
     if (subject.length === 0) {
+      console.log(`Response time : ${resTime} ms`);
       return res.status(404).json({ error: "Subject not found" });
     }
-
+    console.log(`Response time : ${resTime} ms`);
     res.status(200).json(subject[0]);
   } catch (error) {
     console.error("Error retrieving subject:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 
-export const updateSubject = async (req, res) => {
+export const updateSubject = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { name ,credit} = req.body;
-  
+  const { name, credit } = req.body;
+  let responseTime = 0;
   try {
-    const conn = req.connect;
     const query = "SELECT * FROM Subject WHERE subject_id = ?";
-    const [Subjects] = await conn.query(query, [id]);
-
+    const { result: Subjects, resTime: t1 } = await runQuery(query, [id]);
+    responseTime += t1;
     if (Subjects.length === 0) {
       return res.status(404).json({ error: "Subject not found" });
     }
@@ -176,33 +178,39 @@ export const updateSubject = async (req, res) => {
         SET  name = ? ,credit = ?
         WHERE subject_id = ?
       `;
-    await conn.query(updateQuery, [  name, credit, id]);
+    const { resTime: t2 } = await runQuery(updateQuery, [name, credit, id]);
+    responseTime += t2;
+    console.log(`Response time : ${responseTime} ms`);
 
     res.status(200).json({ message: "Subject updated successfully" });
   } catch (error) {
     console.error("Error updating subject:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 
-export const deleteSubjectsBySemester = async (req, res) => {
+export const deleteSubjectsBySemester = catchAsync(async (req, res) => {
   const { semesterId, departmentId } = req.params;
-  
+  let responseTime = 0;
   try {
-    const conn = req.connect;
     const checkSemesterQuery = "SELECT * FROM Semester WHERE semester_id = ?";
-    const [existingSemesters] = await conn.query(checkSemesterQuery, [
-      semesterId,
-    ]);
-
+    const { result: existingSemesters, resTime: t1 } = await runQuery(
+      checkSemesterQuery,
+      [semesterId]
+    );
+    responseTime += t1;
     if (existingSemesters.length === 0) {
       return res.status(404).json({ error: "Semester not found" });
     }
 
     const deleteSubjectQuery =
       "DELETE FROM Subject WHERE semester_id = ? AND department_id = ?";
-    await conn.query(deleteSubjectQuery, [semesterId, departmentId]);
-
+    const { resTime: t2 } = await runQuery(deleteSubjectQuery, [
+      semesterId,
+      departmentId,
+    ]);
+    responseTime += t2;
+    console.log(`Response time : ${responseTime} ms`);
     res
       .status(200)
       .json({ message: "All subjects for the semester deleted successfully" });
@@ -210,44 +218,43 @@ export const deleteSubjectsBySemester = async (req, res) => {
     console.error("Error deleting subjects:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 
-export const deleteSubjectById = async (req, res) => {
+export const deleteSubjectById = catchAsync(async (req, res) => {
   const { subjectId } = req.params;
-  
+
   try {
-    const conn = req.connect;
     const deleteSubjectQuery = "DELETE FROM Subject WHERE subject_id = ?";
-    const [result] = await conn.query(deleteSubjectQuery, [subjectId]);
+    const { resTime } = await runQuery(deleteSubjectQuery, [subjectId]);
 
     if (result.affectedRows === 0) {
+      console.log(`Response time : ${resTime} ms`);
       return res.status(404).json({ error: "Subject not found" });
     }
+    console.log(`Response time : ${resTime} ms`);
 
     res.status(200).json({ message: "Subject deleted successfully" });
   } catch (error) {
     console.error("Error deleting subject:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 
-
-export const addSingleSubject = async (req, res) => {
+export const addSingleSubject = catchAsync(async (req, res) => {
   const { department_id, semester_id, name, credit } = req.body;
-  
+  let responseTime = 0
   try {
-    const conn = req.connect;
     const insertQuery = `
       INSERT INTO Subject (department_id, semester_id, name, credit)
       VALUES (?, ?, ?, ?)
     `;
-    const [insertResult] = await conn.query(insertQuery, [
+    const {result:insertResult ,resTime:t1} = await runQuery(insertQuery, [
       department_id,
       semester_id,
       name,
       credit,
     ]);
-
+    responseTime +=t1
     const subject_id = insertResult.insertId;
 
     const selectQuery = `
@@ -260,11 +267,15 @@ export const addSingleSubject = async (req, res) => {
       FROM Subject
       WHERE subject_id = ?
     `;
-    const [subject] = await conn.query(selectQuery, [subject_id]);
-  
-    res.status(201).json({ message: "Subject created successfully", subject:subject[0] });
+    const {result:subject,resTime:t2} = await runQuery(selectQuery, [subject_id]);
+    responseTime +=t2
+    console.log(`Response time : ${responseTime} ms`);
+
+    res
+      .status(201)
+      .json({ message: "Subject created successfully", subject: subject[0] });
   } catch (error) {
     console.error("Error creating subject:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});

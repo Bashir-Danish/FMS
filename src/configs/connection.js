@@ -10,20 +10,25 @@ config();
 //   password:  "dos1234",
 //   database: "Fms1",
 // };
-const dbConfig1 = {
-  host: process.env.DB_HOST_1,
-  user: process.env.DB_USER_1,
-  password: process.env.DB_PASSWORD_1,
-  database: process.env.DB_NAME_1,
-};
-
-// const dbConfig2 = {
-//   host: process.env.DB_HOST_2,
-//   user: process.env.DB_USER_2,
-//   password: process.env.DB_PASSWORD_2,
-//   database: process.env.DB_NAME_2,
+// const dbConfig1 = {
+//   host: process.env.DB_HOST_1,
+//   user: process.env.DB_USER_1,
+//   password: process.env.DB_PASSWORD_1,
+//   database: process.env.DB_NAME_1,
 // };
 
+const dbConfig1 = {
+  host: process.env.DB_HOST_2,
+  user: process.env.DB_USER_2,
+  password: process.env.DB_PASSWORD_2,
+  database: process.env.DB_NAME_2,
+};
+// const dbConfig1 = {
+//   host: process.env.DB_HOST_3,
+//   user: process.env.DB_USER_3,
+//   password: process.env.DB_PASSWORD_3,
+//   database: process.env.DB_NAME_3,
+// };
 // DB_HOST_1='190.92.190.16'
 // DB_USER_1='dos'
 // DB_PASSWORD_1='dos1234'

@@ -14,3 +14,10 @@ export function errorHandler(err, req, res, next) {
     stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
   });
 }
+
+export function catchAsync(theFunction) {
+  return (req, res, next) => {
+    Promise.resolve(theFunction(req, res, next)).catch(next);
+  };
+}
+

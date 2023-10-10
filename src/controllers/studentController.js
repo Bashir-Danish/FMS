@@ -1,40 +1,46 @@
 import path from "path";
 import fs from "fs";
+import { catchAsync } from "../middlewares.js";
+import { runQuery } from "../utils/query.js";
+import { getConnectionPool } from "../configs/connection.js";
 
-export const getStudents = async (req, res) => {
-  const conn = req.connect;
+
+export const getStudents = catchAsync(async (req, res) => {
+
   const { departmentId, year } = req.query;
   try {
     const query = `
     SELECT * FROM Student
     WHERE department_id = ? AND year = ?
   `;
-  const [students] = await conn.query(query, [departmentId, year]);
+  const {result:students ,resTime} = await runQuery(query, [departmentId, year]);
     // const yearsQuery = `
     //   SELECT DISTINCT year FROM Student
     // `;
-    // const [yearsResult] = await await conn.query(yearsQuery);
+    // const [yearsResult] = await await runQuery(yearsQuery);
     // console.log(yearsResult);
+    console.log(`Response time : ${resTime} ms`);
     res.status(200).json({ students: students });
   } catch (error) {
     console.error("Error retrieving students:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
-export const getYears = async (req, res) => {
-  const conn = req.connect;
+});
+export const getYears = catchAsync(async (req, res) => {
+
   try {
     const yearsQuery = `
       SELECT DISTINCT year FROM Student
     `;
-    const [yearsResult] = await await conn.query(yearsQuery);
+    const {result:yearsResult,resTime} =  await runQuery(yearsQuery);
 
+    console.log(`Response time : ${resTime} ms`);
     res.status(200).json({ years: yearsResult });
   } catch (error) {
     console.error("Error retrieving years:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 function generateUniqueFilename() {
   const timestamp = new Date().getTime();
   const random = Math.floor(Math.random() * 100000000);
@@ -51,15 +57,15 @@ export const createStudent = async (req, res) => {
     imagePath,
     year,
   } = req.body;
-  console.log(req.body);
-  const conn = req.connect;
+  // console.log(req.body);
 
+  let responseTime = 0
   try {
     const checkQuery = `
       SELECT * FROM Student WHERE ssid = ?
     `;
-    const [students] = await conn.query(checkQuery, [ssid]);
-
+    const {result:students,resTime:t1 }= await runQuery(checkQuery, [ssid]);
+    responseTime +=t1
     if (students.length > 0) {
       return res
         .status(400)
@@ -89,17 +95,19 @@ export const createStudent = async (req, res) => {
         `;
       }
 
-      const [result] = await conn.query(insertQuery, queryValues);
+      const {result,resTime:t2 }=  await runQuery(insertQuery, queryValues);
       student_id = result.insertId;
+      responseTime +=t2
 
       const selectQuery = `
         SELECT * FROM Student WHERE student_id = ?
       `;
-      const [studentData] = await conn.query(selectQuery, [student_id]);
+      const {result:studentData,resTime:t3}= await runQuery(selectQuery, [student_id]);
       const student = studentData[0];
+      responseTime +=t3
 
-      console.log(student);
-
+      // console.log(student);
+      console.log(`Response time : ${responseTime} ms`);
       res.status(201).json({ student, message: "محصل موفقانه اضافه شد" });
     }
   } catch (error) {
@@ -110,17 +118,17 @@ export const createStudent = async (req, res) => {
 
 export const getStudentById = async (req, res) => {
   const { id } = req.params;
-  const conn = req.connect;
 
   try {
     const query = `
       SELECT * FROM Student WHERE student_id = ?
     `;
-    const [students] = await conn.query(query, [id]);
+    const {result:students,resTime} = await runQuery(query, [id]);
 
     if (students.length === 0) {
       return res.status(404).json({ error: "Student not found" });
     }
+    console.log(`Response time : ${resTime} ms`);
 
     res.status(200).json(students[0]);
   } catch (error) {
@@ -133,38 +141,38 @@ export const updateStudent = async (req, res) => {
   const { id } = req.params;
   const { name, fname, ssid, department_id, current_semester, imagePath } =
     req.body;
+    let responseTime = 0
+
   try {
-    const conn = req.connect;
+  
     const getStudentQuery = `
       SELECT * FROM Student
       WHERE student_id = ?
     `;
 
-    const [studentRows] = await conn.query(getStudentQuery, [id]);
+    const {result:studentRows,resTime:t1} = await runQuery(getStudentQuery, [id]);
+    responseTime +=t1
     if (studentRows.length === 0) {
       return res.status(404).json({ error: "Student not found" });
     }
 
     const student = studentRows[0];
 
+
     // if (req.files && req.files.file) {
     //   const file = req.files.file;
     //   const ext = file.name.split(".").pop();
-
     //   const oldFilePath = path.resolve(
     //     path.dirname("") + "/src/" + student.picture
     //   );
-
     //   try {
     //     await fs.promises.unlink(oldFilePath);
     //   } catch (error) {
     //     console.error("Error deleting previous user image:", error);
     //   }
-
     //   const uniqueFilename = generateUniqueFilename();
     //   newFilePath = `/uploads/student/${uniqueFilename}` + "." + ext;
     //   const filePath = path.resolve(path.dirname("") + "/src" + newFilePath);
-
     //   try {
     //     file.mv(filePath, function (err) {
     //       if (err) {
@@ -198,7 +206,7 @@ export const updateStudent = async (req, res) => {
       SET name = ?, fname = ?, ssid = ?,  department_id = ? ,picture = ? ,current_semester =?
       WHERE student_id = ?
     `;
-    await conn.query(updateQuery, [
+    const {resTime:t2 }=await runQuery(updateQuery, [
       updatedFields.name,
       updatedFields.fname,
       updatedFields.ssid,
@@ -207,7 +215,8 @@ export const updateStudent = async (req, res) => {
       updatedFields.current_semester,
       id,
     ]);
-
+    responseTime += t2
+    console.log(`Response time : ${responseTime} ms`);
     res
       .status(200)
       .json({ student: updatedFields, message: "محصل موفقانه ویرایش شد" });
@@ -219,14 +228,14 @@ export const updateStudent = async (req, res) => {
 
 export const deleteStudent = async (req, res) => {
   const { id } = req.params;
-  
+  let responseTime = 0
   try {
-    const conn = req.connect;
+  
     const getStudentQuery = `
       SELECT * FROM Student WHERE student_id = ?
     `;
-    const [students] = await conn.query(getStudentQuery, [id]);
-
+    const {result:students ,resTime:t1} = await runQuery(getStudentQuery, [id]);
+    responseTime += t1
     if (students.length === 0) {
       return res.status(400).json({ error: "کاربر یافت نشد" });
     }
@@ -237,7 +246,8 @@ export const deleteStudent = async (req, res) => {
       DELETE FROM Student WHERE student_id = ?
     `;
 
-    await conn.query(deleteQuery, [id]);
+    const  {resTime:t2}=await runQuery(deleteQuery, [id]);
+    responseTime += t2
 
     if (student.picture) {
       const filePath = path.resolve(
@@ -254,6 +264,7 @@ export const deleteStudent = async (req, res) => {
         console.log("File not found:", filePath);
       }
     }
+    console.log(`Response time : ${responseTime} ms`);
 
     res.status(200).json({ message: "کاربر موفانه حذف شد" });
   } catch (error) {
@@ -524,11 +535,10 @@ let father_names = [
 let startingSsid = 89100;
 let year = 1389;
 
-export const seedStudent = async (req, res) => {
+export const seedStudent = catchAsync(async (req, res) => {
   const { id } = req.params;
   const departmentIds = [1, 2, 3];
-  
-  const conn = req.connect;
+
   year += 1;
   startingSsid += 1000;
   const folderPath = "./src/uploads/images";
@@ -589,7 +599,7 @@ export const seedStudent = async (req, res) => {
     `;
 
     try {
-      await conn.query(insertQuery, [students]);
+      await runQuery(insertQuery, [students]);
       console.log(
         `Inserted ${numberOfStudents} students into Department ${departmentId}`
       );
@@ -600,4 +610,4 @@ export const seedStudent = async (req, res) => {
       );
     }
   }
-};
+});
