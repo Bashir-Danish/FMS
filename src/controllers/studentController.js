@@ -13,7 +13,7 @@ export const getStudents = catchAsync(async (req, res) => {
     SELECT * FROM Student
     WHERE department_id = ? AND year = ?
   `;
-  const {result:students ,resTime} = await runQuery(query, [departmentId, year]);
+  const {result:students ,resTime} = await runQuery(query, [departmentId, year??1390]);
     // const yearsQuery = `
     //   SELECT DISTINCT year FROM Student
     // `;
