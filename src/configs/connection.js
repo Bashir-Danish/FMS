@@ -16,13 +16,13 @@ config();
 //   password: process.env.DB_PASSWORD_1,
 //   database: process.env.DB_NAME_1,
 // };
-
 // const dbConfig1 = {
 //   host: process.env.DB_HOST_2,
 //   user: process.env.DB_USER_2,
 //   password: process.env.DB_PASSWORD_2,
 //   database: process.env.DB_NAME_2,
 // };
+
 const dbConfig1 = {
   host: process.env.DB_HOST_3,
   user: process.env.DB_USER_3,
