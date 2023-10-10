@@ -40,7 +40,6 @@ async function enrollStudents(semesterId) {
       "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
 
     const { result: semesters, resTime: t1 } = await runQuery(
-      conn,
       semesterQuery,
       [semesterId]
     );
@@ -68,7 +67,6 @@ async function enrollStudents(semesterId) {
   `;
 
     const { result: eligibleStudents, resTime: t2 } = await runQuery(
-      conn,
       eligibleStudentsQuery,
       [
         semester.semester_number == 1
@@ -93,7 +91,7 @@ async function enrollStudents(semesterId) {
           WHERE s.semester_id = ? AND s.department_id = ?
         `;
         const { result: studentSubjects, resTime: t3 } = await runQuery(
-          conn,
+          
           subjectsQuery,
           [semesterId, student.department_id]
         );
@@ -102,7 +100,7 @@ async function enrollStudents(semesterId) {
         for (const subject of studentSubjects) {
           const enrollQuery =
             "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
-          const { resTime: t4 } = await runQuery(conn, enrollQuery, [
+          const { resTime: t4 } = await runQuery( enrollQuery, [
             student.student_id,
             subject.subject_id,
             semesterId,
@@ -127,7 +125,7 @@ async function enrollStudents(semesterId) {
         `;
 
         const {result:currentSemesterSubjects,resTime:t5} = await runQuery(
-          conn,
+          
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
         );
@@ -161,7 +159,7 @@ async function enrollStudents(semesterId) {
               SET graduated = 1
               WHERE student_id = ?
             `;
-           const {resTime:t6}= await runQuery(conn, updateGraduationQuery, [student.student_id]);
+           const {resTime:t6}= await runQuery( updateGraduationQuery, [student.student_id]);
     totalQueryResponseTime += t6;
 
             // console.log(`Student ID ${student.student_id} has graduated`);
@@ -177,7 +175,7 @@ async function enrollStudents(semesterId) {
           WHERE s.semester_id = ? AND s.department_id = ?
           `;
           const {result:currentSemesterSubjects,resTime:t7} = await runQuery(
-            conn,
+            
             currentSemesterCreditsQuery,
             [semesterId, student.department_id]
           );
@@ -193,7 +191,7 @@ async function enrollStudents(semesterId) {
             const enrollQuery = `
               INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
             `;
-           const {resTime:t8} = await runQuery(conn, enrollQuery, [
+           const {resTime:t8} = await runQuery( enrollQuery, [
               student.student_id,
               subject.subject_id,
               semesterId,
@@ -206,7 +204,7 @@ async function enrollStudents(semesterId) {
             SET current_semester = current_semester + 1
             WHERE student_id = ?
           `;
-          const {resTime:t9} = await runQuery(conn, updateCurrentSemesterQuery, [
+          const {resTime:t9} = await runQuery( updateCurrentSemesterQuery, [
             student.student_id,
           ]);
           totalQueryResponseTime += t9;
@@ -222,7 +220,7 @@ async function enrollStudents(semesterId) {
           //   SET year = year + 1
           //   WHERE student_id = ?
           // `;
-          // await runQuery(conn,incrementYearQuery, [student.student_id]);
+          // await runQuery(incrementYearQuery, [student.student_id]);
           // console.log(`Year incremented for student ID ${student.student_id}`);
         }
       }
