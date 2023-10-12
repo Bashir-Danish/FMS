@@ -154,10 +154,22 @@ async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
 const { enrollmentsData, semesterId, departmentId } = workerData;
 
 (async () => {
-  const result = await updateStudentGrades(
-    enrollmentsData,
-    semesterId,
-    departmentId
-  );
-  parentPort.postMessage(result);
+  try {
+    await createConnections();
+
+    if (!currentConnectionPool) {
+      throw new Error("Database connection pool is not initialized.");
+    }
+
+    const result = await updateStudentGrades(
+      enrollmentsData,
+      semesterId,
+      departmentId
+    );
+    parentPort.postMessage(result);
+  } catch (error) {
+    console.error("Error initializing database connections:", error);
+  } finally {
+    process.exit(0);
+  }
 })();
