@@ -12,12 +12,9 @@ export const runQuery = async (query, params = []) => {
       if (result === undefined) {
         throw new Error("Query result is undefined");
       }
-  
       const endTime = Date.now();
       const queryResponseTime = endTime - startTime;
-  
       console.log(`Query executed in ${queryResponseTime} ms`);
-      
       return {
         result,
         resTime: queryResponseTime,

@@ -1,20 +1,66 @@
-import mysql from "mysql2/promise";
+import { createConnection } from "mysql2/promise";
+
+export let connectionPool1;
+export let connectionPool2;
+export let currentConnectionPool;
 import { Worker, parentPort, workerData } from "worker_threads";
-import { getConnectionPool } from "../../configs/connection.js";
-import { runQuery } from "../../utils/query.js";
-// Database configuration
-// const dbConfig = {
+
+// const dbConfig1 = {
 //   host: process.env.DB_HOST_1,
 //   user: process.env.DB_USER_1,
 //   password: process.env.DB_PASSWORD_1,
 //   database: process.env.DB_NAME_1,
 // };
-// const dbConfig = {
-//   host: "192.168.1.250",
-//   user: "dos",
-//   password: "dos1234",
-//   database: "Fms1",
+// const dbConfig1 = {
+//   host: process.env.DB_HOST_2,
+//   user: process.env.DB_USER_2,
+//   password: process.env.DB_PASSWORD_2,
+//   database: process.env.DB_NAME_2,
 // };
+
+const dbConfig1 = {
+  host: process.env.DB_HOST_3,
+  user: process.env.DB_USER_3,
+  password: process.env.DB_PASSWORD_3,
+  database: process.env.DB_NAME_3,
+};
+
+export async function createConnections() {
+  try {
+    currentConnectionPool = await createConnection(dbConfig1);
+    // connectionPool1 = await createConnectionPool(dbConfig2);
+  } catch {}
+}
+export function getConnectionPool() {
+  // currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
+  return currentConnectionPool;
+}
+
+const runQuery = async (query, params = []) => {
+  let conn = getConnectionPool();
+  try {
+    if (!conn) {
+      throw new Error("Database connection is undefined.");
+    }
+    const startTime = Date.now();
+    const [result] = await conn.query(query, params);
+
+    if (result === undefined) {
+      throw new Error("Query result is undefined");
+    }
+    const endTime = Date.now();
+    const queryResponseTime = endTime - startTime;
+
+    console.log(`Query executed in ${queryResponseTime} ms`);
+    return {
+      result,
+      resTime: queryResponseTime,
+    };
+  } catch (error) {
+    console.error("Error running query:", error);
+    throw error;
+  }
+};
 async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
   // const conn = await mysql.createConnection(dbConfig);
   let responseTime = 0;
