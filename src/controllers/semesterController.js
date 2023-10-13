@@ -47,29 +47,293 @@ export const getSemesters = catchAsync(async (req, res) => {
   }
 });
 
+// export const createSemester = catchAsync(async (req, res) => {
+//   const { name, year, semester_number } = req.body;
+//   let responseTime = 0;
+//   try {
+//     const queryCheck =
+//       "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
+//     const { result: rows, resTime: t1 } = await runQuery(queryCheck, [
+//       name,
+//       year,
+//       semester_number,
+//     ]);
+//     responseTime += t1;
+//     if (rows.length > 0) {
+//       console.log(`Response time : ${responseTime} ms`);
+
+//       return res.status(409).json({ error: "این ترم از قبل وجود دارد" });
+//     }
+
+//     const query =
+//       "INSERT INTO Semester (name, year ,semester_number) VALUES (?, ?, ?)";
+//     const { result, resTime: t2 } = await runQuery(query, [
+//       name,
+//       year,
+//       semester_number,
+//     ]);
+//     responseTime += t2;
+//     const semesterId = result.insertId;
+
+//     console.log(`Response time : ${responseTime} ms`);
+//     res.status(201).json({ semesterId, message: "سمستر موفقانه اضافه شد" });
+//   } catch (error) {
+//     console.error("Error creating semester:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+const subjectData = {
+  1: {
+    1: [
+      { name: "Computer Eng", credit: 5 },
+      { name: "جھان بینی اسلامی", credit: 2 },
+      { name: "تجوید", credit: 2 },
+      { name: "Mathematics", credit: 3 },
+      { name: "programming", credit: 5 },
+      { name: "English", credit: 2 },
+    ],
+    2: [
+      { name: "Computer Eng", credit: 5 },
+      { name: "جھان بینی اسلامی", credit: 2 },
+      { name: "تجوید", credit: 2 },
+      { name: "Mathematics", credit: 3 },
+      { name: "programming", credit: 5 },
+      { name: "English", credit: 2 },
+    ],
+    3: [
+      { name: "Computer Eng", credit: 5 },
+      { name: "جھان بینی اسلامی", credit: 2 },
+      { name: "تجوید", credit: 2 },
+      { name: "Mathematics", credit: 3 },
+      { name: "programming", credit: 5 },
+      { name: "English", credit: 2 },
+    ],
+  },
+  2: {
+    1: [
+      { name: "English", credit: 2 },
+      { name: "سيرت النبى", credit: 2 },
+      { name: "فلسفه عبادات", credit: 2 },
+      { name: "programming", credit: 5 },
+      { name: "Computer Eng", credit: 5 },
+      { name: "Mathematics", credit: 3 },
+    ],
+    2: [
+      { name: "English", credit: 2 },
+      { name: "سيرت النبى", credit: 2 },
+      { name: "فلسفه عبادات", credit: 2 },
+      { name: "programming", credit: 5 },
+      { name: "Computer Eng", credit: 5 },
+      { name: "Mathematics", credit: 3 },
+    ],
+    3: [
+      { name: "English", credit: 2 },
+      { name: "سيرت النبى", credit: 2 },
+      { name: "فلسفه عبادات", credit: 2 },
+      { name: "programming", credit: 5 },
+      { name: "Computer Eng", credit: 5 },
+      { name: "Mathematics", credit: 3 },
+    ],
+  },
+  3: {
+    1: [
+      { name: "English", credit: 2 },
+      { name: "نظام اجتماعى", credit: 2 },
+      { name: "نظام اخلاقى", credit: 2 },
+      { name: "Algorithm", credit: 4 },
+      { name: "Database", credit: 4 },
+      { name: "OS", credit: 4 },
+      { name: "mathematics", credit: 3 },
+    ],
+    2: [
+      { name: "English", credit: 2 },
+      { name: "نظام اجتماعى", credit: 2 },
+      { name: "نظام اخلاقى", credit: 2 },
+      { name: "Algorithm", credit: 4 },
+      { name: "Database", credit: 4 },
+      { name: "OS", credit: 4 },
+      { name: "mathematics", credit: 3 },
+    ],
+    3: [
+      { name: "English", credit: 2 },
+      { name: "نظام اجتماعى", credit: 2 },
+      { name: "نظام اخلاقى", credit: 2 },
+      { name: "Algorithm", credit: 4 },
+      { name: "Database", credit: 4 },
+      { name: "OS", credit: 4 },
+      { name: "mathematics", credit: 3 },
+    ],
+  },
+  4: {
+    1: [
+      { name: "English", credit: 2 },
+      { name: "تربيت فكرى", credit: 2 },
+      { name: "اديان و مذاهب", credit: 2 },
+      { name: "Data Structure", credit: 4 },
+      { name: "mathematics", credit: 3 },
+      { name: "Network", credit: 4 },
+      { name: "C", credit: 4 },
+    ],
+    2: [
+      { name: "English", credit: 2 },
+      { name: "تربيت فكرى", credit: 2 },
+      { name: "اديان و مذاهب", credit: 2 },
+      { name: "Data Structure", credit: 4 },
+      { name: "mathematics", credit: 3 },
+      { name: "Network", credit: 4 },
+      { name: "C", credit: 4 },
+    ],
+    3: [
+      { name: "English", credit: 2 },
+      { name: "تربيت فكرى", credit: 2 },
+      { name: "اديان و مذاهب", credit: 2 },
+      { name: "Data Structure", credit: 4 },
+      { name: "mathematics", credit: 3 },
+      { name: "Network", credit: 4 },
+      { name: "C", credit: 4 },
+    ],
+  },
+  5: {
+    1: [
+      { name: "Database System", credit: 5 },
+      { name: "Web Eng #I", credit: 5 },
+      { name: "نظام اداری", credit: 2 },
+      { name: "نظام سياسى", credit: 2 },
+      { name: "Project Management", credit: 2 },
+      { name: "Scientific Writing", credit: 2 },
+      { name: "Mathematics", credit: 4 },
+    ],
+    2: [
+      { name: "Project management", credit: 2 },
+      { name: "نظام اداری", credit: 2 },
+      { name: "نظام سیاسی", credit: 2 },
+      { name: "Web Eng #I", credit: 5 },
+      { name: "Scientific Writing", credit: 2 },
+      { name: "Mathematics", credit: 4 },
+      { name: "Software Eng#I", credit: 5 },
+    ],
+    3: [
+      { name: "Project Management", credit: 2 },
+      { name: "نظام اداری", credit: 2 },
+      { name: "نظام سیاسی", credit: 2 },
+      { name: "Net Programming", credit: 5 },
+      { name: "Distributed Systems", credit: 5 },
+      { name: "Scientific Writing", credit: 2 },
+      { name: "Mathematics", credit: 4 },
+    ],
+  },
+  6: {
+    1: [
+      { name: "Scientific Writing", credit: 2 },
+      { name: "اقتصادى اسلامى", credit: 2 },
+      { name: "Web", credit: 5 },
+      { name: "Database", credit: 5 },
+      { name: "HCI", credit: 5 },
+    ],
+    2: [
+      { name: "Scientific Writing", credit: 2 },
+      { name: "اقتصادى اسلامى", credit: 2 },
+      { name: "Web", credit: 5 },
+      { name: "Java", credit: 5 },
+      { name: "Software Eng", credit: 5 },
+    ],
+    3: [
+      { name: "Scientific Writing", credit: 2 },
+      { name: "اقتصادى اسلامى", credit: 2 },
+      { name: "Network Protocol", credit: 5 },
+      { name: "Wireless", credit: 5 },
+      { name: "Security", credit: 5 },
+    ],
+  },
+  7: {
+    1: [
+      { name: "Data Warehousing", credit: 5 },
+      { name: "Web Eng#3", credit: 5 },
+      { name: "Mobile Development", credit: 5 },
+      { name: "اسلامی", credit: 2 },
+      { name: "Scientific Writing", credit: 2 },
+    ],
+    2: [
+      { name: "Enterprise", credit: 5 },
+      { name: "HCI", credit: 5 },
+      { name: "Architecture", credit: 5 },
+      { name: "Scientific Writing", credit: 2 },
+      { name: "اسلامی", credit: 2 },
+    ],
+    3: [
+      { name: "Security #2", credit: 5 },
+      { name: "Resource Management", credit: 5 },
+      { name: "Network Programming II", credit: 5 },
+      { name: "Scientific Writing", credit: 2 },
+      { name: "اسلامی", credit: 2 },
+    ],
+  },
+  8: {
+    1: [
+      { name: "Advance Database", credit: 5 },
+      { name: "تمدن اسلامى", credit: 2 },
+      { name: "laravel", credit: 5 },
+    ],
+    2: [
+      { name: "Spring boot", credit: 5 },
+      { name: "Architecture", credit: 5 },
+      { name: "تمدن اسلامى", credit: 2 },
+    ],
+    3: [
+      { name: "Virtualization", credit: 5 },
+      { name: "Routing", credit: 5 },
+      { name: "تمدن اسلامى", credit: 2 },
+    ],
+  },
+};
+
 export const createSemester = catchAsync(async (req, res) => {
   const { name, year, semester_number } = req.body;
-  let responseTime = 0
+  let responseTime = 0;
   try {
     const queryCheck =
       "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
-    const {result:rows,resTime:t1} = await runQuery(queryCheck, [name, year, semester_number]);
-    responseTime += t1
-    if (rows.length > 0) {
-      console.log(`Response time : ${responseTime} ms`);
-
-      return res.status(409).json({ error: "این ترم از قبل وجود دارد" });
-    }
-
-    const query =
-      "INSERT INTO Semester (name, year ,semester_number) VALUES (?, ?, ?)";
-    const {result,resTime:t2} = await runQuery(query, [
+    const { result: rows, resTime: t1 } = await runQuery(queryCheck, [
       name,
       year,
       semester_number,
     ]);
-    responseTime += t2
+    responseTime += t1;
+    if (rows.length > 0) {
+      console.log(`Response time : ${responseTime} ms`);
+      return res.status(409).json({ error: "این ترم از قبل وجود دارد" });
+    }
+
+    const query =
+      "INSERT INTO Semester (name, year, semester_number) VALUES (?, ?, ?)";
+    const { result, resTime: t2 } = await runQuery(query, [
+      name,
+      year,
+      semester_number,
+    ]);
+    responseTime += t2;
     const semesterId = result.insertId;
+
+    const semesterSubjects = subjectData[semester_number];
+    if (semesterSubjects) {
+      for (const departmentId in semesterSubjects) {
+        const subjects = semesterSubjects[departmentId];
+        for (const subject of subjects) {
+          const { name, credit } = subject;
+          const insertSubjectQuery = `
+            INSERT INTO Subject (department_id, semester_id, name, credit)
+            VALUES (?, ?, ?, ?)
+          `;
+          const { resTime: t3 } = await runQuery(insertSubjectQuery, [
+            departmentId,
+            semesterId,
+            name,
+            credit,
+          ]);
+          responseTime += t3;
+        }
+      }
+    }
 
     console.log(`Response time : ${responseTime} ms`);
     res.status(201).json({ semesterId, message: "سمستر موفقانه اضافه شد" });

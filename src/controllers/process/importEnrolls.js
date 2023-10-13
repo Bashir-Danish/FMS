@@ -132,13 +132,13 @@ async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
         }
       }
     }
-    console.log(`Response time : ${responseTime} ms`);
-
+    
     return "Grades updated successfully.";
   } catch (error) {
     console.error("Error updating grades:", error);
     return `Error updating grades: ${error.message}`;
   } finally {
+    console.log(`Response time : ${responseTime} ms`);
     // conn.end();
   }
 }
