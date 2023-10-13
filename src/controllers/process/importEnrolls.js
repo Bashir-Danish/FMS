@@ -62,7 +62,7 @@ const runQuery = async (query, params = []) => {
   }
 };
 async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
-  // const conn = await mysql.createConnection(dbConfig);
+  
   let responseTime = 0;
   try {
     const findSubjectsQuery = `
@@ -79,8 +79,6 @@ async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
     const subjectMap = new Map(
       subjects.map((subject) => [subject.name, subject.subject_id])
     );
-    // console.log("subjectMap");
-    // console.log(subjectMap);
 
     for (const enrollment of enrollmentsData) {
       const { ssid, name, fname, ...grades } = enrollment;
@@ -105,14 +103,10 @@ async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
       }
 
       const studentId = studentRow[0].student_id;
-      // console.log("grades");
-      // console.log(grades);
 
       for (const subjectName in grades) {
         if (grades.hasOwnProperty(subjectName)) {
           const grade = grades[subjectName];
-          // console.log("grade");
-          // console.log(grade);
 
           if (subjectMap.has(subjectName)) {
             const subjectId = subjectMap.get(subjectName);
@@ -131,7 +125,6 @@ async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
             ]);
             responseTime += t3;
           } else {
-            // Subject not found in the specified semester and department, skip it
             console.error(
               `Subject ${subjectName} not found for semester ${semesterId} and department ${departmentId}`
             );
@@ -150,7 +143,6 @@ async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
   }
 }
 
-// Receive enrollment data (grades), semesterId, and departmentId from workerData
 const { enrollmentsData, semesterId, departmentId } = workerData;
 
 (async () => {
