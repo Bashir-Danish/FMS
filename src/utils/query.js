@@ -1,6 +1,6 @@
 
 import { getConnectionPool } from "../configs/connection.js";
-import sleep from 'sleep';
+
 export const runQuery = async (query, params = []) => {
     let conn = getConnectionPool();
     try {
@@ -10,7 +10,6 @@ export const runQuery = async (query, params = []) => {
       if (!conn || !conn.connection || conn.connection._closing) {
         console.info('Connection is in a closed state, getting a new connection');
         await conn.destroy(); 
-        sleep.sleep(1); 
         conn = await getConnectionPool() 
     }
     
