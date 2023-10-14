@@ -4,16 +4,17 @@ import { catchAsync } from "../middlewares.js";
 import { runQuery } from "../utils/query.js";
 import { getConnectionPool } from "../configs/connection.js";
 
-
 export const getStudents = catchAsync(async (req, res) => {
-
   const { departmentId, year } = req.query;
   try {
     const query = `
     SELECT * FROM Student
     WHERE department_id = ? AND year = ?
   `;
-  const {result:students ,resTime} = await runQuery(query, [departmentId, year]);
+    const { result: students, resTime } = await runQuery(query, [
+      departmentId,
+      year,
+    ]);
     // const yearsQuery = `
     //   SELECT DISTINCT year FROM Student
     // `;
@@ -27,12 +28,11 @@ export const getStudents = catchAsync(async (req, res) => {
   }
 });
 export const getYears = catchAsync(async (req, res) => {
-
   try {
     const yearsQuery = `
       SELECT DISTINCT year FROM Student
     `;
-    const {result:yearsResult,resTime} =  await runQuery(yearsQuery);
+    const { result: yearsResult, resTime } = await runQuery(yearsQuery);
 
     console.log(`Response time : ${resTime} ms`);
     res.status(200).json({ years: yearsResult });
@@ -59,13 +59,15 @@ export const createStudent = async (req, res) => {
   } = req.body;
   // console.log(req.body);
 
-  let responseTime = 0
+  let responseTime = 0;
   try {
     const checkQuery = `
       SELECT * FROM Student WHERE ssid = ?
     `;
-    const {result:students,resTime:t1 }= await runQuery(checkQuery, [ssid]);
-    responseTime +=t1
+    const { result: students, resTime: t1 } = await runQuery(checkQuery, [
+      ssid,
+    ]);
+    responseTime += t1;
     if (students.length > 0) {
       return res
         .status(400)
@@ -95,16 +97,18 @@ export const createStudent = async (req, res) => {
         `;
       }
 
-      const {result,resTime:t2 }=  await runQuery(insertQuery, queryValues);
+      const { result, resTime: t2 } = await runQuery(insertQuery, queryValues);
       student_id = result.insertId;
-      responseTime +=t2
+      responseTime += t2;
 
       const selectQuery = `
         SELECT * FROM Student WHERE student_id = ?
       `;
-      const {result:studentData,resTime:t3}= await runQuery(selectQuery, [student_id]);
+      const { result: studentData, resTime: t3 } = await runQuery(selectQuery, [
+        student_id,
+      ]);
       const student = studentData[0];
-      responseTime +=t3
+      responseTime += t3;
 
       // console.log(student);
       console.log(`Response time : ${responseTime} ms`);
@@ -123,7 +127,7 @@ export const getStudentById = async (req, res) => {
     const query = `
       SELECT * FROM Student WHERE student_id = ?
     `;
-    const {result:students,resTime} = await runQuery(query, [id]);
+    const { result: students, resTime } = await runQuery(query, [id]);
 
     if (students.length === 0) {
       return res.status(404).json({ error: "Student not found" });
@@ -141,23 +145,24 @@ export const updateStudent = async (req, res) => {
   const { id } = req.params;
   const { name, fname, ssid, department_id, current_semester, imagePath } =
     req.body;
-    let responseTime = 0
+  let responseTime = 0;
 
   try {
-  
     const getStudentQuery = `
       SELECT * FROM Student
       WHERE student_id = ?
     `;
 
-    const {result:studentRows,resTime:t1} = await runQuery(getStudentQuery, [id]);
-    responseTime +=t1
+    const { result: studentRows, resTime: t1 } = await runQuery(
+      getStudentQuery,
+      [id]
+    );
+    responseTime += t1;
     if (studentRows.length === 0) {
       return res.status(404).json({ error: "Student not found" });
     }
 
     const student = studentRows[0];
-
 
     // if (req.files && req.files.file) {
     //   const file = req.files.file;
@@ -206,7 +211,7 @@ export const updateStudent = async (req, res) => {
       SET name = ?, fname = ?, ssid = ?,  department_id = ? ,picture = ? ,current_semester =?
       WHERE student_id = ?
     `;
-    const {resTime:t2 }=await runQuery(updateQuery, [
+    const { resTime: t2 } = await runQuery(updateQuery, [
       updatedFields.name,
       updatedFields.fname,
       updatedFields.ssid,
@@ -215,7 +220,7 @@ export const updateStudent = async (req, res) => {
       updatedFields.current_semester,
       id,
     ]);
-    responseTime += t2
+    responseTime += t2;
     console.log(`Response time : ${responseTime} ms`);
     res
       .status(200)
@@ -228,14 +233,15 @@ export const updateStudent = async (req, res) => {
 
 export const deleteStudent = async (req, res) => {
   const { id } = req.params;
-  let responseTime = 0
+  let responseTime = 0;
   try {
-  
     const getStudentQuery = `
       SELECT * FROM Student WHERE student_id = ?
     `;
-    const {result:students ,resTime:t1} = await runQuery(getStudentQuery, [id]);
-    responseTime += t1
+    const { result: students, resTime: t1 } = await runQuery(getStudentQuery, [
+      id,
+    ]);
+    responseTime += t1;
     if (students.length === 0) {
       return res.status(400).json({ error: "کاربر یافت نشد" });
     }
@@ -246,8 +252,8 @@ export const deleteStudent = async (req, res) => {
       DELETE FROM Student WHERE student_id = ?
     `;
 
-    const  {resTime:t2}=await runQuery(deleteQuery, [id]);
-    responseTime += t2
+    const { resTime: t2 } = await runQuery(deleteQuery, [id]);
+    responseTime += t2;
 
     if (student.picture) {
       const filePath = path.resolve(
@@ -532,16 +538,18 @@ let father_names = [
   "ناصر",
   "بهمن",
 ];
-let startingSsid = 89100;
-let year = 1389;
+
+let year = 1392;
 
 export const seedStudent = async (req, res) => {
-  const { id } = req.params;
+  const { ssid } = req.params;
   const departmentIds = [1, 2, 3];
-  
+
   const conn = req.connect;
   year += 1;
-  startingSsid += 1000;
+  let startingSsid = ssid;
+
+  
   const folderPath = "./src/uploads/images";
   const sourceImageFolder = path.resolve(folderPath);
   const imageFiles = fs.readdirSync(sourceImageFolder);
@@ -598,15 +606,15 @@ export const seedStudent = async (req, res) => {
       INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture, year)
       VALUES ?;
     `;
-    
-    const valuesToInsert = students.map(student => [
-      student[0], 
-      student[1], 
-      student[2], 
-      student[3], 
-      student[4], 
-      student[5], 
-      student[6], 
+
+    const valuesToInsert = students.map((student) => [
+      student[0],
+      student[1],
+      student[2],
+      student[3],
+      student[4],
+      student[5],
+      student[6],
     ]);
 
     try {
@@ -622,8 +630,6 @@ export const seedStudent = async (req, res) => {
     }
   }
 };
-
-
 
 // import path from "path";
 // import fs from "fs";
@@ -846,7 +852,7 @@ export const seedStudent = async (req, res) => {
 
 // export const deleteStudent = async (req, res) => {
 //   const { id } = req.params;
-  
+
 //   try {
 //     const conn = req.connect;
 //     const getStudentQuery = `
@@ -1154,7 +1160,7 @@ export const seedStudent = async (req, res) => {
 // export const seedStudent = async (req, res) => {
 //   const { id } = req.params;
 //   const departmentIds = [1, 2, 3];
-  
+
 //   const conn = req.connect;
 //   year += 1;
 //   startingSsid += 1000;
