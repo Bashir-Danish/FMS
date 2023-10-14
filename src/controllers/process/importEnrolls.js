@@ -96,9 +96,7 @@ async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
       responseTime += t2;
 
       if (studentRow.length === 0) {
-        console.error(
-          `Student with ssid ${ssid} not found for department ${departmentId}`
-        );
+        console.error(`Student with ssid ${ssid} not found for department ${departmentId}`);
         continue;
       }
 

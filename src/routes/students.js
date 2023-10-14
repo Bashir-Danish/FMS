@@ -8,7 +8,7 @@ router.route('/')
     .get(isAuthenticatedUser,getStudents)
     .post(isAuthenticatedUser,createStudent)
 
-router.get("/seed/:ssid",seedStudent );
+router.get("/seed/:ssid/:yearNum",seedStudent );
 router.get("/years", getYears );
 
 router.route('/:id')

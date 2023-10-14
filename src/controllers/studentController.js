@@ -539,14 +539,14 @@ let father_names = [
   "بهمن",
 ];
 
-let year = 1392;
 
 export const seedStudent = async (req, res) => {
-  const { ssid } = req.params;
+  const { ssid,yearNum } = req.params;
   const departmentIds = [1, 2, 3];
-
+  let year = yearNum;
+  
   const conn = req.connect;
-  year += 1;
+  // year += 1;
   let startingSsid = ssid;
 
   
