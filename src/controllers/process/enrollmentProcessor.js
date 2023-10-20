@@ -201,12 +201,22 @@ async function enrollStudents(semesterId) {
         totalQueryResponseTime += t3;
 
         for (const subject of studentSubjects) {
+          // const enrollQuery =
+          //   "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
+          // const { resTime: t4 } = await runQuery(enrollQuery, [
+          //   student.student_id,
+          //   subject.subject_id,
+          //   semesterId.semester_id,
+          // ]);
           const enrollQuery =
-            "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
-          const { resTime: t4 } = await runQuery(enrollQuery, [
+            "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+          const randomGrade = Math.floor(Math.random() * (100 - 45 + 1)) + 45;
+
+          const { resTime: t4, res } = await runQuery(enrollQuery, [
             student.student_id,
             subject.subject_id,
             semesterId.semester_id,
+            randomGrade,
           ]);
           totalQueryResponseTime += t4;
         }
