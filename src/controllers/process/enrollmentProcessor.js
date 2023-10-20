@@ -300,13 +300,24 @@ async function enrollStudents(semesterId) {
             return "No Subject found for this semester.";
           }
           for (const subject of currentSemesterSubjects) {
-            const enrollQuery = `
-              INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
-            `;
-            const { resTime: t8 } = await runQuery(enrollQuery, [
+            // const enrollQuery = `
+            //   INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
+            // `;
+            // const { resTime: t8 } = await runQuery(enrollQuery, [
+            //   student.student_id,
+            //   subject.subject_id,
+            //   semesterId.semester_id,
+            // ]);
+            const enrollQuery =
+              "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+
+            const randomGrade = Math.floor(Math.random() * (100 - 45 + 1)) + 45;
+
+            const { resTime: t8, res } = await runQuery(enrollQuery, [
               student.student_id,
               subject.subject_id,
               semesterId.semester_id,
+              randomGrade,
             ]);
             totalQueryResponseTime += t8;
           }
