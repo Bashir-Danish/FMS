@@ -62,7 +62,7 @@ const runQuery = async (query, params = []) => {
   }
 };
 
-async function enrollStudents(semesterId) {
+async function enrollStudents(sem) {
   let totalQueryResponseTime = 0;
 
   try {
@@ -70,15 +70,90 @@ async function enrollStudents(semesterId) {
       "SELECT * FROM Semester WHERE semester_id = ? AND is_passed = 0;";
 
     const { result: semesters, resTime: t1 } = await runQuery(semesterQuery, [
-      semesterId,
+      sem.semester_id,
     ]);
-    console.log(semesters);
+
     totalQueryResponseTime += t1;
 
     if (!semesters || semesters.length === 0) {
-      return `Semester with ID ${semesterId} not found or query result is empty`;
+      return `Semester with ID ${sem.semester_id} not found or query result is empty`;
     }
     const semester = semesters[0];
+
+    if (semester.semester_number == 8 && sem.isFinished) {
+      const elStuQuery = `
+        SELECT s.student_id, s.department_id, s.current_semester
+        FROM Student s
+        WHERE 
+        s.current_semester = 8 
+        AND s.graduated = 0
+        AND s.department_id IN (SELECT department_id FROM Subject WHERE semester_id = ?)
+      `;
+      const { result: eligibleStudents, resTime: t2 } = await runQuery(
+        elStuQuery,
+        [sem.semester_id]
+      );
+
+      totalQueryResponseTime += t2;
+      if (eligibleStudents.length === 0) {
+        console.log("No eligible students found.");
+        return "No eligible students found for this semester.";
+      }
+      for (const student of eligibleStudents) {
+        // console.log(student.current_semester);
+
+        const getCurrentSemesterQuery = `
+          SELECT 
+              s.subject_id, 
+              s.name, 
+              s.credit, 
+              e.grade,
+              CASE
+                  WHEN e.grade >= 55 THEN 'Passed'
+                  ELSE 'Not Passed'
+              END AS status
+          FROM Subject s
+          LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
+          JOIN Semester sem ON s.semester_id = sem.semester_id
+          WHERE sem.semester_number = ? AND e.student_id = ?;
+        `;
+
+        const { result: currentSemesterSubjects, resTime: t5 } = await runQuery(
+          getCurrentSemesterQuery,
+          [student.current_semester, student.student_id]
+        );
+        totalQueryResponseTime += t5;
+
+        const totalCredits = currentSemesterSubjects.reduce(
+          (sum, subject) => sum + subject.credit,
+          0
+        );
+        const passedSubjects = currentSemesterSubjects.filter(
+          (subject) => subject.status === "Passed"
+        );
+        const totalCreditsPassed = passedSubjects.reduce(
+          (sum, subject) => sum + subject.credit,
+          0
+        );
+
+        if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
+          const updateGraduationQuery = `
+              UPDATE Student
+              SET graduated = 1
+              WHERE student_id = ?
+            `;
+          const { resTime: t6 } = await runQuery(updateGraduationQuery, [
+            student.student_id,
+          ]);
+          totalQueryResponseTime += t6;
+
+          console.log(`Enrolling student ID ${student.student_id} graduated`);
+        } else {
+          console.log("can't passed the semester Student " + student.ssid);
+        }
+      }
+      return;
+    }
 
     const eligibleStudentsQuery = `
     SELECT s.student_id, s.department_id, s.current_semester
@@ -96,7 +171,7 @@ async function enrollStudents(semesterId) {
         semester.semester_number == 1
           ? semester.semester_number
           : semester.semester_number - 1,
-        semesterId,
+        sem.semester_id,
       ]
     );
     totalQueryResponseTime += t2;
@@ -116,7 +191,7 @@ async function enrollStudents(semesterId) {
         `;
         const { result: studentSubjects, resTime: t3 } = await runQuery(
           subjectsQuery,
-          [semesterId, student.department_id]
+          [sem.semester_id, student.department_id]
         );
         totalQueryResponseTime += t3;
 
@@ -126,7 +201,7 @@ async function enrollStudents(semesterId) {
           const { resTime: t4 } = await runQuery(enrollQuery, [
             student.student_id,
             subject.subject_id,
-            semesterId,
+            sem.semester_id,
           ]);
           totalQueryResponseTime += t4;
         }
@@ -153,7 +228,6 @@ async function enrollStudents(semesterId) {
         );
         totalQueryResponseTime += t5;
 
-        // console.log(currentSemesterSubjects);
         const totalCredits = currentSemesterSubjects.reduce(
           (sum, subject) => sum + subject.credit,
           0
@@ -166,28 +240,7 @@ async function enrollStudents(semesterId) {
           0
         );
 
-        // console.log("Total credits in the current semester:", totalCredits);
-        // console.log("Half of the total credits:", Math.round(totalCredits / 2));
-        //  // console.log("Total credits of passed subjects:", totalCreditsPassed);
-        // console.log(
-        //   "Total credits of passed subjects:",
-        //   totalCreditsPassed >= Math.round(totalCredits / 2)
-        // );
-
         if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
-          if (student.current_semester === 8) {
-            const updateGraduationQuery = `
-              UPDATE Student
-              SET graduated = 1
-              WHERE student_id = ?
-            `;
-            const { resTime: t6 } = await runQuery(updateGraduationQuery, [
-              student.student_id,
-            ]);
-            totalQueryResponseTime += t6;
-
-            // console.log(`Student ID ${student.student_id} has graduated`);
-          }
           // console.log(
           //   "this student can pass the semester" + student.student_id + " :",
           //   totalCreditsPassed >= Math.round(totalCredits / 2)
@@ -200,7 +253,7 @@ async function enrollStudents(semesterId) {
           `;
           const { result: currentSemesterSubjects, resTime: t7 } =
             await runQuery(currentSemesterCreditsQuery, [
-              semesterId,
+              sem.semester_id,
               student.department_id,
             ]);
           totalQueryResponseTime += t7;
@@ -217,7 +270,7 @@ async function enrollStudents(semesterId) {
             const { resTime: t8 } = await runQuery(enrollQuery, [
               student.student_id,
               subject.subject_id,
-              semesterId,
+              sem.semester_id,
             ]);
             totalQueryResponseTime += t8;
           }
@@ -235,9 +288,7 @@ async function enrollStudents(semesterId) {
             `Enrolling student ID ${student.student_id} to the next semester`
           );
         } else {
-          console.log(
-            "can't passed the semester Student Id" + student.student_id
-          );
+          console.log("can't passed the semester Student " + student.ssid);
           //   const incrementYearQuery = `
           //   UPDATE Student
           //   SET year = year + 1
@@ -252,7 +303,7 @@ async function enrollStudents(semesterId) {
     return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
   } catch (error) {
     console.error("Error enrolling students:", error);
-    return `Error enrolling students for semester ID ${semesterId}: ${error.message}`;
+    return `Error enrolling students for semester ID ${sem.semester_id}: ${error.message}`;
   }
 }
 
@@ -266,8 +317,8 @@ const { semesterIdsArray } = workerData;
       throw new Error("Database connection pool is not initialized.");
     }
 
-    for (const semesterId of semesterIdsArray) {
-      const result = await enrollStudents(semesterId);
+    for (const semester of semesterIdsArray) {
+      const result = await enrollStudents(semester);
       parentPort.postMessage(result);
     }
   } catch (error) {
