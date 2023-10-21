@@ -196,7 +196,11 @@ async function enrollStudents(semesterId) {
 
     let parameters = [];
     if (semester.semester_number === 1) {
-      parameters = [semester.semester_number, semesterId.semester_id];
+      parameters = [
+        semester.semester_number,
+        semester.semester_number,
+        semesterId.semester_id,
+      ];
     } else if (semester.semester_number === 8) {
       parameters = [
         semester.semester_number,
