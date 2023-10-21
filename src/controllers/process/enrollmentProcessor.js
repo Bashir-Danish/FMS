@@ -311,7 +311,7 @@ async function enrollStudents(semesterId) {
             const enrollQuery =
               "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
 
-            const randomGrade = Math.floor(Math.random() * (100 - 45 + 1)) + 45;
+            const randomGrade = Math.floor(Math.random() * (100 - 50 + 1)) + 50;
 
             const { resTime: t8, res } = await runQuery(enrollQuery, [
               student.student_id,
