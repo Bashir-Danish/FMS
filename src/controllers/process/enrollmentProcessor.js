@@ -162,25 +162,60 @@ async function enrollStudents(semesterId) {
       }
       return;
     }
+    // const { res: eligibleStudents, resTime: t2 } = await runQuery(
+    //   eligibleStudentsQuery,
+    //   [
+    //     semester.semester_number == 1
+    //       ? semester.semester_number
+    //       : semester.semester_number - 1,
+    //     semesterId.semester_id,
+    //   ]
+    // );
+
+    // const eligibleStudentsQuery = `
+    //   SELECT s.student_id, s.department_id, s.current_semester
+    //   FROM Student s
+    //   WHERE
+    //     s.current_semester = ?
+    //     AND s.graduated = 0
+    //     AND s.department_id IN (
+    //       SELECT department_id FROM Subject WHERE semester_id = ?
+    //     )
+    // `;
+
     const eligibleStudentsQuery = `
-    SELECT s.student_id, s.department_id, s.current_semester
-    FROM Student s
-    WHERE 
-    s.current_semester = ? 
-    AND s.graduated = 0
-      AND s.department_id IN (
-      SELECT department_id FROM Subject WHERE semester_id = ?
-    )
-  `;
+      SELECT s.student_id, s.department_id, s.current_semester
+      FROM Student s
+      WHERE 
+        (s.current_semester = ? OR s.current_semester = ?)
+        AND s.graduated = 0
+        AND s.department_id IN (
+          SELECT department_id FROM Subject WHERE semester_id = ?
+        )
+    `;
+
+    let parameters = [];
+    if (semester.semester_number === 1) {
+      parameters = [semester.semester_number, semesterId.semester_id];
+    } else if (semester.semester_number === 8) {
+      parameters = [
+        semester.semester_number,
+        semester.semester_number - 1,
+        semesterId.semester_id,
+      ];
+    } else {
+      parameters = [
+        semester.semester_number - 1,
+        semester.semester_number,
+        semesterId.semester_id,
+      ];
+    }
+
     const { res: eligibleStudents, resTime: t2 } = await runQuery(
       eligibleStudentsQuery,
-      [
-        semester.semester_number == 1
-          ? semester.semester_number
-          : semester.semester_number - 1,
-        semesterId.semester_id,
-      ]
+      parameters
     );
+
     totalQueryResponseTime += t2;
 
     if (eligibleStudents.length === 0) {
@@ -190,6 +225,7 @@ async function enrollStudents(semesterId) {
 
     for (const student of eligibleStudents) {
       console.log(student);
+
       if (semester.semester_number < 2) {
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
@@ -214,7 +250,6 @@ async function enrollStudents(semesterId) {
             "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
           function generateRandomGrade() {
             const random = Math.random();
-
             if (random < 0.2) {
               return Math.floor(Math.random() * (56 - 50) + 50);
             } else {
@@ -232,6 +267,47 @@ async function enrollStudents(semesterId) {
           totalQueryResponseTime += t4;
         }
       } else {
+        if (student.current_semester == 8) {
+          const subjectsQuery = `
+          SELECT s.subject_id, s.credit
+          FROM Subject s
+          WHERE s.semester_id = ? AND s.department_id = ?
+        `;
+          const { res: studentSubjects, resTime: t3 } = await runQuery(
+            subjectsQuery,
+            [semesterId.semester_id, student.department_id]
+          );
+          totalQueryResponseTime += t3;
+
+          for (const subject of studentSubjects) {
+            // const enrollQuery =
+            //   "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
+            // const { resTime: t4 } = await runQuery(enrollQuery, [
+            //   student.student_id,
+            //   subject.subject_id,
+            //   semesterId.semester_id,
+            // ]);
+            const enrollQuery =
+              "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+            function generateRandomGrade() {
+              const random = Math.random();
+              if (random < 0.2) {
+                return Math.floor(Math.random() * (56 - 50) + 50);
+              } else {
+                return Math.floor(Math.random() * (100 - 56) + 56);
+              }
+            }
+            const randomGrade = generateRandomGrade();
+
+            const { resTime: t4, res } = await runQuery(enrollQuery, [
+              student.student_id,
+              subject.subject_id,
+              semesterId.semester_id,
+              randomGrade,
+            ]);
+            totalQueryResponseTime += t4;
+          }
+        }
         const getCurrentSemesterQuery = `
           SELECT 
               s.subject_id, 
@@ -267,33 +343,7 @@ async function enrollStudents(semesterId) {
           0
         );
 
-        // console.log("Total credits in the current semester:", totalCredits);
-        // console.log("Half of the total credits:", Math.round(totalCredits / 2));
-        //  // console.log("Total credits of passed subjects:", totalCreditsPassed);
-        // console.log(
-        //   "Total credits of passed subjects:",
-        //   totalCreditsPassed >= Math.round(totalCredits / 2)
-        // );
-
         if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
-          // if (student.current_semester === 8) {
-          //   const updateGraduationQuery = `
-          //     UPDATE Student
-          //     SET graduated = 1
-          //     WHERE student_id = ?
-          //   `;
-          //   const { resTime: t6 } = await runQuery(updateGraduationQuery, [
-          //     student.student_id,
-          //   ]);
-          //   totalQueryResponseTime += t6;
-
-          //   // console.log(`Student ID ${student.student_id} has graduated`);
-          // }
-          // console.log(
-          //   "this student can pass the semester" + student.student_id + " :",
-          //   totalCreditsPassed >= Math.round(totalCredits / 2)
-          // );
-
           const currentSemesterCreditsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s
@@ -305,8 +355,6 @@ async function enrollStudents(semesterId) {
           );
           totalQueryResponseTime += t7;
 
-          // console.log("currentSemesterSubjects");
-          // console.log(currentSemesterSubjects);
           if (currentSemesterSubjects.length === 0) {
             return "No Subject found for this semester.";
           }
@@ -358,13 +406,6 @@ async function enrollStudents(semesterId) {
           console.log(
             "can't passed the semester Student " + student.student_id
           );
-          //   const incrementYearQuery = `
-          //   UPDATE Student
-          //   SET year = year + 1
-          //   WHERE student_id = ?
-          // `;
-          // await runQuery(incrementYearQuery, [student.student_id]);
-          // console.log(`Year incremented for student ID ${student.student_id}`);
         }
       }
     }
