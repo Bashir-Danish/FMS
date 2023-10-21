@@ -99,6 +99,7 @@ async function enrollStudents(semesterId) {
       );
 
       totalQueryResponseTime += t2;
+      console.log(eligibleStudents);
       if (eligibleStudents.length === 0) {
         console.log("No eligible students found.");
         return "No eligible students found for this semester.";
@@ -126,6 +127,7 @@ async function enrollStudents(semesterId) {
           getCurrentSemesterQuery,
           [student.current_semester, student.student_id]
         );
+        console.log(currentSemesterSubjects);
         totalQueryResponseTime += t5;
 
         const totalCredits = currentSemesterSubjects.reduce(
@@ -210,7 +212,16 @@ async function enrollStudents(semesterId) {
           // ]);
           const enrollQuery =
             "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
-          const randomGrade = Math.floor(Math.random() * (100 - 45 + 1)) + 45;
+          function generateRandomGrade() {
+            const random = Math.random();
+
+            if (random < 0.1) {
+              return Math.floor(Math.random() * (56 - 50) + 50);
+            } else {
+              return Math.floor(Math.random() * (100 - 56) + 56);
+            }
+          }
+          const randomGrade = generateRandomGrade();
 
           const { resTime: t4, res } = await runQuery(enrollQuery, [
             student.student_id,
@@ -314,14 +325,14 @@ async function enrollStudents(semesterId) {
             function generateRandomGrade() {
               const random = Math.random();
 
-              if (random < 0.2) {
+              if (random < 0.1) {
                 return Math.floor(Math.random() * (56 - 50) + 50);
               } else {
                 return Math.floor(Math.random() * (100 - 56) + 56);
               }
             }
             const randomGrade = generateRandomGrade();
-            
+
             const { resTime: t8, res } = await runQuery(enrollQuery, [
               student.student_id,
               subject.subject_id,
