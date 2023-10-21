@@ -215,7 +215,7 @@ async function enrollStudents(semesterId) {
           function generateRandomGrade() {
             const random = Math.random();
 
-            if (random < 0.1) {
+            if (random < 0.2) {
               return Math.floor(Math.random() * (56 - 50) + 50);
             } else {
               return Math.floor(Math.random() * (100 - 56) + 56);
@@ -325,7 +325,7 @@ async function enrollStudents(semesterId) {
             function generateRandomGrade() {
               const random = Math.random();
 
-              if (random < 0.1) {
+              if (random < 0.2) {
                 return Math.floor(Math.random() * (56 - 50) + 50);
               } else {
                 return Math.floor(Math.random() * (100 - 56) + 56);
