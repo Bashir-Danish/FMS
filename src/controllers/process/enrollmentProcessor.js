@@ -313,105 +313,105 @@ async function enrollStudents(semesterId) {
           }
           return;
         }
-        // const getCurrentSemesterQuery = `
-        //   SELECT
-        //       s.subject_id,
-        //       s.name,
-        //       s.credit,
-        //       e.grade,
-        //       CASE
-        //           WHEN e.grade >= 55 THEN 'Passed'
-        //           ELSE 'Not Passed'
-        //       END AS status
-        //   FROM Subject s
-        //   LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
-        //   JOIN Semester sem ON s.semester_id = sem.semester_id
-        //   WHERE sem.semester_number = ? AND e.student_id = ?;
-        // `;
+        const getCurrentSemesterQuery = `
+          SELECT
+              s.subject_id,
+              s.name,
+              s.credit,
+              e.grade,
+              CASE
+                  WHEN e.grade >= 55 THEN 'Passed'
+                  ELSE 'Not Passed'
+              END AS status
+          FROM Subject s
+          LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
+          JOIN Semester sem ON s.semester_id = sem.semester_id
+          WHERE sem.semester_number = ? AND e.student_id = ?;
+        `;
 
-        // const { res: currentSemesterSubjects, resTime: t5 } = await runQuery(
-        //   getCurrentSemesterQuery,
-        //   [student.current_semester, student.student_id]
-        // );
-        // totalQueryResponseTime += t5;
+        const { res: currentSemesterSubjects, resTime: t5 } = await runQuery(
+          getCurrentSemesterQuery,
+          [student.current_semester, student.student_id]
+        );
+        totalQueryResponseTime += t5;
 
-        // // console.log(currentSemesterSubjects);
-        // const totalCredits = currentSemesterSubjects.reduce(
-        //   (sum, subject) => sum + subject.credit,
-        //   0
-        // );
-        // const passedSubjects = currentSemesterSubjects.filter(
-        //   (subject) => subject.status === "Passed"
-        // );
-        // const totalCreditsPassed = passedSubjects.reduce(
-        //   (sum, subject) => sum + subject.credit,
-        //   0
-        // );
+        // console.log(currentSemesterSubjects);
+        const totalCredits = currentSemesterSubjects.reduce(
+          (sum, subject) => sum + subject.credit,
+          0
+        );
+        const passedSubjects = currentSemesterSubjects.filter(
+          (subject) => subject.status === "Passed"
+        );
+        const totalCreditsPassed = passedSubjects.reduce(
+          (sum, subject) => sum + subject.credit,
+          0
+        );
 
-        // if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
-        //   const currentSemesterCreditsQuery = `
-        //   SELECT s.subject_id, s.credit
-        //   FROM Subject s
-        //   WHERE s.semester_id = ? AND s.department_id = ?
-        //   `;
-        //   const { res: currentSemesterSubjects, resTime: t7 } = await runQuery(
-        //     currentSemesterCreditsQuery,
-        //     [semesterId.semester_id, student.department_id]
-        //   );
-        //   totalQueryResponseTime += t7;
+        if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
+          const currentSemesterCreditsQuery = `
+          SELECT s.subject_id, s.credit
+          FROM Subject s
+          WHERE s.semester_id = ? AND s.department_id = ?
+          `;
+          const { res: currentSemesterSubjects, resTime: t7 } = await runQuery(
+            currentSemesterCreditsQuery,
+            [semesterId.semester_id, student.department_id]
+          );
+          totalQueryResponseTime += t7;
 
-        //   if (currentSemesterSubjects.length === 0) {
-        //     return "No Subject found for this semester.";
-        //   }
-        //   for (const subject of currentSemesterSubjects) {
-        //     // const enrollQuery = `
-        //     //   INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
-        //     // `;
-        //     // const { resTime: t8 } = await runQuery(enrollQuery, [
-        //     //   student.student_id,
-        //     //   subject.subject_id,
-        //     //   semesterId.semester_id,
-        //     // ]);
-        //     const enrollQuery =
-        //       "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+          if (currentSemesterSubjects.length === 0) {
+            return "No Subject found for this semester.";
+          }
+          for (const subject of currentSemesterSubjects) {
+            // const enrollQuery = `
+            //   INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
+            // `;
+            // const { resTime: t8 } = await runQuery(enrollQuery, [
+            //   student.student_id,
+            //   subject.subject_id,
+            //   semesterId.semester_id,
+            // ]);
+            const enrollQuery =
+              "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
 
-        //     function generateRandomGrade() {
-        //       const random = Math.random();
+            function generateRandomGrade() {
+              const random = Math.random();
 
-        //       if (random < 0.2) {
-        //         return Math.floor(Math.random() * (56 - 50) + 50);
-        //       } else {
-        //         return Math.floor(Math.random() * (100 - 56) + 56);
-        //       }
-        //     }
-        //     const randomGrade = generateRandomGrade();
+              if (random < 0.2) {
+                return Math.floor(Math.random() * (56 - 50) + 50);
+              } else {
+                return Math.floor(Math.random() * (100 - 56) + 56);
+              }
+            }
+            const randomGrade = generateRandomGrade();
 
-        //     const { resTime: t8, res } = await runQuery(enrollQuery, [
-        //       student.student_id,
-        //       subject.subject_id,
-        //       semesterId.semester_id,
-        //       randomGrade,
-        //     ]);
-        //     totalQueryResponseTime += t8;
-        //   }
+            const { resTime: t8, res } = await runQuery(enrollQuery, [
+              student.student_id,
+              subject.subject_id,
+              semesterId.semester_id,
+              randomGrade,
+            ]);
+            totalQueryResponseTime += t8;
+          }
 
-        //   const updateCurrentSemesterQuery = `
-        //     UPDATE Student
-        //     SET current_semester = current_semester + 1
-        //     WHERE student_id = ?
-        //   `;
-        //   const { resTime: t9 } = await runQuery(updateCurrentSemesterQuery, [
-        //     student.student_id,
-        //   ]);
-        //   totalQueryResponseTime += t9;
-        //   console.log(
-        //     `Enrolling student ID ${student.student_id} to the next semester`
-        //   );
-        // } else {
-        //   console.log(
-        //     "can't passed the semester Student " + student.student_id
-        //   );
-        // }
+          const updateCurrentSemesterQuery = `
+            UPDATE Student
+            SET current_semester = current_semester + 1
+            WHERE student_id = ?
+          `;
+          const { resTime: t9 } = await runQuery(updateCurrentSemesterQuery, [
+            student.student_id,
+          ]);
+          totalQueryResponseTime += t9;
+          console.log(
+            `Enrolling student ID ${student.student_id} to the next semester`
+          );
+        } else {
+          console.log(
+            "can't passed the semester Student " + student.student_id
+          );
+        }
       }
     }
 
