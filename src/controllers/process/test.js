@@ -254,7 +254,7 @@ async function enrollStudents(semesterId) {
                         "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
                     function generateRandomGrade() {
                         const random = Math.random();
-                        if (random < 0.15) {
+                        if (random < 0.1) {
                             return Math.floor(Math.random() * (56 - 50) + 50);
                         } else {
                             return Math.floor(Math.random() * (100 - 56) + 56);
@@ -381,7 +381,7 @@ async function enrollStudents(semesterId) {
                             function generateRandomGrade() {
                                 const random = Math.random();
 
-                                if (random < 0.15) {
+                                if (random < 0.1) {
                                     return Math.floor(Math.random() * (56 - 50) + 50);
                                 } else {
                                     return Math.floor(Math.random() * (100 - 56) + 56);
