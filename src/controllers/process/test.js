@@ -254,7 +254,7 @@ async function enrollStudents(semesterId) {
                         "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
                     function generateRandomGrade() {
                         const random = Math.random();
-                        if (random < 0.2) {
+                        if (random < 0.15) {
                             return Math.floor(Math.random() * (56 - 50) + 50);
                         } else {
                             return Math.floor(Math.random() * (100 - 56) + 56);
@@ -295,22 +295,22 @@ async function enrollStudents(semesterId) {
                         // ]);
 
                         const enrollQuery =
-                          "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+                            "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
                         function generateRandomGrade() {
-                          const random = Math.random();
-                          if (random < 0.2) {
-                            return Math.floor(Math.random() * (56 - 50) + 50);
-                          } else {
-                            return Math.floor(Math.random() * (100 - 56) + 56);
-                          }
+                            const random = Math.random();
+                            if (random < 0.2) {
+                                return Math.floor(Math.random() * (56 - 50) + 50);
+                            } else {
+                                return Math.floor(Math.random() * (100 - 56) + 56);
+                            }
                         }
                         const randomGrade = generateRandomGrade();
 
                         const { resTime: t4, res } = await runQuery(enrollQuery, [
-                          student.student_id,
-                          subject.subject_id,
-                          semesterId.semester_id,
-                          randomGrade,
+                            student.student_id,
+                            subject.subject_id,
+                            semesterId.semester_id,
+                            randomGrade,
                         ]);
                         totalQueryResponseTime += t4;
                     }
@@ -381,7 +381,7 @@ async function enrollStudents(semesterId) {
                             function generateRandomGrade() {
                                 const random = Math.random();
 
-                                if (random < 0.2) {
+                                if (random < 0.15) {
                                     return Math.floor(Math.random() * (56 - 50) + 50);
                                 } else {
                                     return Math.floor(Math.random() * (100 - 56) + 56);
