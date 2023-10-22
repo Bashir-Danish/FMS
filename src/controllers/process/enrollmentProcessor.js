@@ -228,8 +228,6 @@ async function enrollStudents(semesterId) {
     }
 
     for (const student of eligibleStudents) {
-      console.log(student);
-
       if (semester.semester_number == 1) {
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
@@ -270,49 +268,49 @@ async function enrollStudents(semesterId) {
           ]);
           totalQueryResponseTime += t4;
         }
-      } else {
-        if (student.current_semester == 8) {
-          const subjectsQuery = `
+        return;
+      } else if (student.current_semester == 8) {
+        const subjectsQuery = `
             SELECT s.subject_id, s.credit
             FROM Subject s
             WHERE s.semester_id = ? AND s.department_id = ?
           `;
-          const { res: studentSubjects, resTime: t3 } = await runQuery(
-            subjectsQuery,
-            [semesterId.semester_id, student.department_id]
-          );
-          totalQueryResponseTime += t3;
+        const { res: studentSubjects, resTime: t3 } = await runQuery(
+          subjectsQuery,
+          [semesterId.semester_id, student.department_id]
+        );
+        totalQueryResponseTime += t3;
 
-          for (const subject of studentSubjects) {
-            // const enrollQuery =
-            //   "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
-            // const { resTime: t4 } = await runQuery(enrollQuery, [
-            //   student.student_id,
-            //   subject.subject_id,
-            //   semesterId.semester_id,
-            // ]);
-            const enrollQuery =
-              "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
-            function generateRandomGrade() {
-              const random = Math.random();
-              if (random < 0.2) {
-                return Math.floor(Math.random() * (56 - 50) + 50);
-              } else {
-                return Math.floor(Math.random() * (100 - 56) + 56);
-              }
+        for (const subject of studentSubjects) {
+          // const enrollQuery =
+          //   "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
+          // const { resTime: t4 } = await runQuery(enrollQuery, [
+          //   student.student_id,
+          //   subject.subject_id,
+          //   semesterId.semester_id,
+          // ]);
+          const enrollQuery =
+            "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+          function generateRandomGrade() {
+            const random = Math.random();
+            if (random < 0.2) {
+              return Math.floor(Math.random() * (56 - 50) + 50);
+            } else {
+              return Math.floor(Math.random() * (100 - 56) + 56);
             }
-            const randomGrade = generateRandomGrade();
-
-            const { resTime: t4, res } = await runQuery(enrollQuery, [
-              student.student_id,
-              subject.subject_id,
-              semesterId.semester_id,
-              randomGrade,
-            ]);
-            totalQueryResponseTime += t4;
           }
-          return;
+          const randomGrade = generateRandomGrade();
+
+          const { resTime: t4, res } = await runQuery(enrollQuery, [
+            student.student_id,
+            subject.subject_id,
+            semesterId.semester_id,
+            randomGrade,
+          ]);
+          totalQueryResponseTime += t4;
         }
+        return;
+      } else {
         const getCurrentSemesterQuery = `
           SELECT
               s.subject_id,
