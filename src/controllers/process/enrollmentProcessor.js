@@ -230,7 +230,7 @@ async function enrollStudents(semesterId) {
     for (const student of eligibleStudents) {
       console.log(student);
 
-      if (semester.semester_number < 2) {
+      if (semester.semester_number == 1) {
         const subjectsQuery = `
           SELECT s.subject_id, s.credit
           FROM Subject s
