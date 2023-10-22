@@ -150,7 +150,7 @@ async function enrollStudents(semesterId) {
                     totalQueryResponseTime += t6;
 
                     console.log(`Enrolling student ID ${student.student_id} graduated`);
-                    return `Enrolling student ID ${student.student_id} graduated`;
+                    // return `Enrolling student ID ${student.student_id} graduated`;
                 } else {
                     console.log(
                         "can't passed the semester Student " + student.student_id
