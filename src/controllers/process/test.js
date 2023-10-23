@@ -188,7 +188,7 @@ async function enrollStudents(semesterId) {
         } else {
             // Ex  2
             parameters = [
-                semester.semester_number - 1,
+                semester.semester_number,
                 semester.semester_number - 1,
                 semesterId.semester_id,
             ];
@@ -235,7 +235,7 @@ async function enrollStudents(semesterId) {
                 SELECT s.subject_id, s.credit
                 FROM Subject s
                 WHERE s.semester_id = ? AND s.department_id = ?
-            `;
+                `;
                 const { res: studentSubjects, resTime: t3 } = await runQuery(
                     subjectsQuery,
                     [semesterId.semester_id, student.department_id]
