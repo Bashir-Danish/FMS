@@ -199,6 +199,7 @@ async function enrollStudents(semesterId) {
             parameters
         );
 
+
         totalQueryResponseTime += t2;
 
         if (eligibleStudents.length === 0) {
@@ -272,7 +273,7 @@ async function enrollStudents(semesterId) {
                 }
                 // return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
             } else {
-                if (student.current_semester == 8) {
+                if (student.current_semester == semester.semester_number) {
                     // if student is in 8th semester
                     const subjectsQuery = `
                         SELECT s.subject_id, s.credit
