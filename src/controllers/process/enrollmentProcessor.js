@@ -29,7 +29,7 @@ export async function createConnections() {
   try {
     currentConnectionPool = await createConnection(dbConfig1);
     // connectionPool1 = await createConnectionPool(dbConfig2);
-  } catch {}
+  } catch { }
 }
 export function getConnectionPool() {
   // currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
@@ -39,14 +39,11 @@ export function getConnectionPool() {
 const runQuery = async (query, params = []) => {
   let conn = getConnectionPool();
   try {
-    // console.log(query);
-    // console.log(params);
     if (!conn) {
       throw new Error("Database connection is undefined.");
     }
     const startTime = Date.now();
     const [result] = await conn.query(query, params);
-    // console.log(result);
 
     if (result === undefined) {
       throw new Error("Query result is undefined");
@@ -83,16 +80,17 @@ async function enrollStudents(semesterId) {
       return `Semester with ID ${semesterId} not found or query result is empty`;
     }
     const semester = semesters[0];
-
+    // Step  1
+    // to graduate students
     if (semester.semester_number == 8 && semesterId.isFinished) {
       const elStuQuery = `
-        SELECT s.student_id, s.department_id, s.current_semester
-        FROM Student s
-        WHERE
-        s.current_semester = 8
-        AND s.graduated = 0
-        AND s.department_id IN (SELECT department_id FROM Subject WHERE semester_id = ?)
-      `;
+                SELECT s.student_id, s.department_id, s.current_semester
+                FROM Student s
+                WHERE
+                s.current_semester = 8
+                AND s.graduated = 0
+                AND s.department_id IN (SELECT department_id FROM Subject WHERE semester_id = ?)
+            `;
       const { res: eligibleStudents, resTime: t2 } = await runQuery(
         elStuQuery,
         [semesterId.semester_id]
@@ -105,23 +103,21 @@ async function enrollStudents(semesterId) {
         return "No eligible students found for this semester.";
       }
       for (const student of eligibleStudents) {
-        // console.log(student.current_semester);
-
         const getCurrentSemesterQuery = `
-          SELECT
-              s.subject_id,
-              s.name,
-              s.credit,
-              e.grade,
-              CASE
-                  WHEN e.grade >= 55 THEN 'Passed'
-                  ELSE 'Not Passed'
-              END AS status
-          FROM Subject s
-          LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
-          JOIN Semester sem ON s.semester_id = sem.semester_id
-          WHERE sem.semester_id = ? AND e.student_id = ?;
-        `;
+                SELECT
+                    s.subject_id,
+                    s.name,
+                    s.credit,
+                    e.grade,
+                    CASE
+                        WHEN e.grade >= 55 THEN 'Passed'
+                        ELSE 'Not Passed'
+                    END AS status
+                FROM Subject s
+                LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
+                JOIN Semester sem ON s.semester_id = sem.semester_id
+                WHERE sem.semester_id = ? AND e.student_id = ?;
+                `;
 
         const { res: currentSemesterSubjects, resTime: t5 } = await runQuery(
           getCurrentSemesterQuery,
@@ -144,23 +140,71 @@ async function enrollStudents(semesterId) {
 
         if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
           const updateGraduationQuery = `
-              UPDATE Student
-              SET graduated = 1
-              WHERE student_id = ?
-            `;
+                    UPDATE Student
+                    SET graduated = 1
+                    WHERE student_id = ?
+                    `;
           const { resTime: t6 } = await runQuery(updateGraduationQuery, [
             student.student_id,
           ]);
           totalQueryResponseTime += t6;
 
           console.log(`Enrolling student ID ${student.student_id} graduated`);
+          // return `Enrolling student ID ${student.student_id} graduated`;
         } else {
           console.log(
             "can't passed the semester Student " + student.student_id
           );
         }
       }
-      return;
+      //   return `The 8th semester students graduated`;
+      // return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
+    }
+
+    const eligibleStudentsQuery = `
+        SELECT s.student_id, s.department_id, s.current_semester
+        FROM Student s
+        WHERE 
+            (s.current_semester = ? OR s.current_semester = ?)
+            AND s.graduated = 0
+            AND s.department_id IN (
+            SELECT department_id FROM Subject WHERE semester_id = ?
+            )
+        `;
+
+    let parameters = [];
+    if (semester.semester_number === 1) {
+      parameters = [
+        semester.semester_number, // 1
+        semester.semester_number, // 1
+        semesterId.semester_id,
+      ];
+    } else if (semester.semester_number === 8) {
+      parameters = [
+        8, // 8
+        7, // 7
+        semesterId.semester_id,
+      ];
+    } else {
+      // Ex  2
+      parameters = [
+        semester.semester_number,
+        semester.semester_number - 1,
+        semesterId.semester_id,
+      ];
+    }
+
+    const { res: eligibleStudents, resTime: t2 } = await runQuery(
+      eligibleStudentsQuery,
+      parameters
+    );
+
+
+    totalQueryResponseTime += t2;
+
+    if (eligibleStudents.length === 0) {
+      console.log("No eligible students found.");
+      return "No eligible students found for this semester.";
     }
 
     // const { res: eligibleStudents, resTime: t2 } = await runQuery(
@@ -184,57 +228,15 @@ async function enrollStudents(semesterId) {
     //     )
     // `;
 
-    const eligibleStudentsQuery = `
-      SELECT s.student_id, s.department_id, s.current_semester
-      FROM Student s
-      WHERE 
-        (s.current_semester = ? OR s.current_semester = ?)
-        AND s.graduated = 0
-        AND s.department_id IN (
-          SELECT department_id FROM Subject WHERE semester_id = ?
-        )
-    `;
-
-    let parameters = [];
-    if (semester.semester_number === 1) {
-      parameters = [
-        semester.semester_number,
-        semester.semester_number,
-        semesterId.semester_id,
-      ];
-    } else if (semester.semester_number === 8) {
-      parameters = [
-        semester.semester_number,
-        semester.semester_number - 1,
-        semesterId.semester_id,
-      ];
-    } else {
-      parameters = [
-        semester.semester_number - 1,
-        semester.semester_number,
-        semesterId.semester_id,
-      ];
-    }
-
-    const { res: eligibleStudents, resTime: t2 } = await runQuery(
-      eligibleStudentsQuery,
-      parameters
-    );
-
-    totalQueryResponseTime += t2;
-
-    if (eligibleStudents.length === 0) {
-      console.log("No eligible students found.");
-      return "No eligible students found for this semester.";
-    }
-
     for (const student of eligibleStudents) {
       if (semester.semester_number == 1) {
+        console.log("test");
+        console.log(student);
         const subjectsQuery = `
-          SELECT s.subject_id, s.credit
-          FROM Subject s
-          WHERE s.semester_id = ? AND s.department_id = ?
-        `;
+                SELECT s.subject_id, s.credit
+                FROM Subject s
+                WHERE s.semester_id = ? AND s.department_id = ?
+                `;
         const { res: studentSubjects, resTime: t3 } = await runQuery(
           subjectsQuery,
           [semesterId.semester_id, student.department_id]
@@ -242,40 +244,42 @@ async function enrollStudents(semesterId) {
         totalQueryResponseTime += t3;
 
         for (const subject of studentSubjects) {
+          //    const { resTime: t4 } = await runQuery(enrollQuery, [
+          //     student.student_id,
+          //     subject.subject_id,
+          //     semesterId.semester_id,
+          //   ]);const enrollQuery =
+          //     "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
+
           const enrollQuery =
-            "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
-          const { resTime: t4 } = await runQuery(enrollQuery, [
+            "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+          function generateRandomGrade() {
+            const random = Math.random();
+            if (random < 0.12) {
+              return Math.floor(Math.random() * (56 - 50) + 50);
+            } else {
+              return Math.floor(Math.random() * (100 - 56) + 56);
+            }
+          }
+          const randomGrade = generateRandomGrade();
+
+          const { resTime: t4, res } = await runQuery(enrollQuery, [
             student.student_id,
             subject.subject_id,
             semesterId.semester_id,
+            randomGrade,
           ]);
-          // const enrollQuery =
-          //   "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
-          // function generateRandomGrade() {
-          //   const random = Math.random();
-          //   if (random < 0.2) {
-          //     return Math.floor(Math.random() * (56 - 50) + 50);
-          //   } else {
-          //     return Math.floor(Math.random() * (100 - 56) + 56);
-          //   }
-          // }
-          // const randomGrade = generateRandomGrade();
-
-          // const { resTime: t4, res } = await runQuery(enrollQuery, [
-          //   student.student_id,
-          //   subject.subject_id,
-          //   semesterId.semester_id,
-          //   randomGrade,
-          // ]);
           totalQueryResponseTime += t4;
         }
+        // return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
       } else {
-        if (student.current_semester == 8) {
+        if (student.current_semester == semester.semester_number) {
+          // if student is in 8th semester
           const subjectsQuery = `
-            SELECT s.subject_id, s.credit
-            FROM Subject s
-            WHERE s.semester_id = ? AND s.department_id = ?
-          `;
+                        SELECT s.subject_id, s.credit
+                        FROM Subject s
+                        WHERE s.semester_id = ? AND s.department_id = ?
+                    `;
           const { res: studentSubjects, resTime: t3 } = await runQuery(
             subjectsQuery,
             [semesterId.semester_id, student.department_id]
@@ -283,100 +287,18 @@ async function enrollStudents(semesterId) {
           totalQueryResponseTime += t3;
 
           for (const subject of studentSubjects) {
-            const enrollQuery =
-              "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
-            const { resTime: t4 } = await runQuery(enrollQuery, [
-              student.student_id,
-              subject.subject_id,
-              semesterId.semester_id,
-            ]);
             // const enrollQuery =
-            //   "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
-            // function generateRandomGrade() {
-            //   const random = Math.random();
-            //   if (random < 0.2) {
-            //     return Math.floor(Math.random() * (56 - 50) + 50);
-            //   } else {
-            //     return Math.floor(Math.random() * (100 - 56) + 56);
-            //   }
-            // }
-            // const randomGrade = generateRandomGrade();
-
-            // const { resTime: t4, res } = await runQuery(enrollQuery, [
-            //   student.student_id,
-            //   subject.subject_id,
-            //   semesterId.semester_id,
-            //   randomGrade,
+            //     "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)";
+            // const { resTime: t4 } = await runQuery(enrollQuery, [
+            //     student.student_id,
+            //     subject.subject_id,
+            //     semesterId.semester_id,
             // ]);
-            totalQueryResponseTime += t4;
-          }
-          return;
-        }
-        const getCurrentSemesterQuery = `
-          SELECT
-              s.subject_id,
-              s.name,
-              s.credit,
-              e.grade,
-              CASE
-                  WHEN e.grade >= 55 THEN 'Passed'
-                  ELSE 'Not Passed'
-              END AS status
-          FROM Subject s
-          LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
-          JOIN Semester sem ON s.semester_id = sem.semester_id
-          WHERE sem.semester_number = ? AND e.student_id = ?;
-        `;
 
-        const { res: currentSemesterSubjects, resTime: t5 } = await runQuery(
-          getCurrentSemesterQuery,
-          [student.current_semester, student.student_id]
-        );
-        totalQueryResponseTime += t5;
-
-        // console.log(currentSemesterSubjects);
-        const totalCredits = currentSemesterSubjects.reduce(
-          (sum, subject) => sum + subject.credit,
-          0
-        );
-        const passedSubjects = currentSemesterSubjects.filter(
-          (subject) => subject.status === "Passed"
-        );
-        const totalCreditsPassed = passedSubjects.reduce(
-          (sum, subject) => sum + subject.credit,
-          0
-        );
-
-        if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
-          const currentSemesterCreditsQuery = `
-          SELECT s.subject_id, s.credit
-          FROM Subject s
-          WHERE s.semester_id = ? AND s.department_id = ?
-          `;
-          const { res: currentSemesterSubjects, resTime: t7 } = await runQuery(
-            currentSemesterCreditsQuery,
-            [semesterId.semester_id, student.department_id]
-          );
-          totalQueryResponseTime += t7;
-
-          if (currentSemesterSubjects.length === 0) {
-            return "No Subject found for this semester.";
-          }
-          for (const subject of currentSemesterSubjects) {
-            // const enrollQuery = `
-            //   INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
-            // `;
-            // const { resTime: t8 } = await runQuery(enrollQuery, [
-            //   student.student_id,
-            //   subject.subject_id,
-            //   semesterId.semester_id,
-            // ]);
             const enrollQuery =
               "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
-
             function generateRandomGrade() {
               const random = Math.random();
-
               if (random < 0.2) {
                 return Math.floor(Math.random() * (56 - 50) + 50);
               } else {
@@ -385,36 +307,119 @@ async function enrollStudents(semesterId) {
             }
             const randomGrade = generateRandomGrade();
 
-            const { resTime: t8, res } = await runQuery(enrollQuery, [
+            const { resTime: t4, res } = await runQuery(enrollQuery, [
               student.student_id,
               subject.subject_id,
               semesterId.semester_id,
               randomGrade,
             ]);
-            totalQueryResponseTime += t8;
+            totalQueryResponseTime += t4;
           }
-
-          const updateCurrentSemesterQuery = `
-            UPDATE Student
-            SET current_semester = current_semester + 1
-            WHERE student_id = ?
-          `;
-          const { resTime: t9 } = await runQuery(updateCurrentSemesterQuery, [
-            student.student_id,
-          ]);
-          totalQueryResponseTime += t9;
-          console.log(
-            `Enrolling student ID ${student.student_id} to the next semester`
-          );
+          // return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
         } else {
-          console.log(
-            "can't passed the semester Student " + student.student_id
+          const getCurrentSemesterQuery = `
+                    SELECT
+                        s.subject_id,
+                        s.name,
+                        s.credit,
+                        e.grade,
+                        CASE
+                            WHEN e.grade >= 55 THEN 'Passed'
+                            ELSE 'Not Passed'
+                        END AS status
+                    FROM Subject s
+                    LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
+                    JOIN Semester sem ON s.semester_id = sem.semester_id
+                    WHERE sem.semester_number = ? AND e.student_id = ?;
+                    `;
+
+          const { res: currentSemesterSubjects, resTime: t5 } = await runQuery(
+            getCurrentSemesterQuery,
+            [student.current_semester, student.student_id]
           );
+          totalQueryResponseTime += t5;
+
+          // console.log(currentSemesterSubjects);
+          const totalCredits = currentSemesterSubjects.reduce(
+            (sum, subject) => sum + subject.credit,
+            0
+          );
+          const passedSubjects = currentSemesterSubjects.filter(
+            (subject) => subject.status === "Passed"
+          );
+          const totalCreditsPassed = passedSubjects.reduce(
+            (sum, subject) => sum + subject.credit,
+            0
+          );
+
+          if (totalCreditsPassed >= Math.round(totalCredits / 2)) {
+            const currentSemesterCreditsQuery = `
+                        SELECT s.subject_id, s.credit
+                        FROM Subject s
+                        WHERE s.semester_id = ? AND s.department_id = ?
+                        `;
+            const { res: currentSemesterSubjects, resTime: t7 } = await runQuery(
+              currentSemesterCreditsQuery,
+              [semesterId.semester_id, student.department_id]
+            );
+            totalQueryResponseTime += t7;
+
+            if (currentSemesterSubjects.length === 0) {
+              return "No Subject found for this semester.";
+            }
+            for (const subject of currentSemesterSubjects) {
+              // const enrollQuery = `
+              //   INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id) VALUES (?, ?, ?)
+              // `;
+              // const { resTime: t8 } = await runQuery(enrollQuery, [
+              //   student.student_id,
+              //   subject.subject_id,
+              //   semesterId.semester_id,
+              // ]);
+              const enrollQuery =
+                "INSERT IGNORE INTO Enrollment (student_id, subject_id, semester_id, grade) VALUES (?, ?, ?, ?)";
+
+              function generateRandomGrade() {
+                const random = Math.random();
+
+                if (random < 0.12) {
+                  return Math.floor(Math.random() * (56 - 50) + 50);
+                } else {
+                  return Math.floor(Math.random() * (100 - 56) + 56);
+                }
+              }
+              const randomGrade = generateRandomGrade();
+
+              const { resTime: t8, res } = await runQuery(enrollQuery, [
+                student.student_id,
+                subject.subject_id,
+                semesterId.semester_id,
+                randomGrade,
+              ]);
+              totalQueryResponseTime += t8;
+            }
+
+            const updateCurrentSemesterQuery = `
+                            UPDATE Student
+                            SET current_semester = current_semester + 1
+                            WHERE student_id = ?
+                        `;
+            const { resTime: t9 } = await runQuery(updateCurrentSemesterQuery, [
+              student.student_id,
+            ]);
+            totalQueryResponseTime += t9;
+            console.log(
+              `Enrolling student ID ${student.student_id} to the next semester`
+            );
+          } else {
+            console.log(
+              "can't passed the semester Student " + student.student_id
+            );
+          }
         }
       }
     }
-
-    // return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
+    return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
   } catch (error) {
     console.error("Error enrolling students:", error);
     return `Error enrolling students for semester ID ${semesterId.semester_id}: ${error.message}`;

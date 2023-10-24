@@ -6,8 +6,8 @@ export const processEnrollment = catchAsync(async (req, res) => {
     const semesterIdsToProcess = req.body.semesterIdsToProcess;
 
     const worker = new Worker(
-      // "./src/controllers/process/enrollmentProcessor.js",
-      "./src/controllers/process/test.js",
+      "./src/controllers/process/enrollmentProcessor.js",
+      // "./src/controllers/process/test.js",
       {
         workerData: {
           semesterIdsArray: semesterIdsToProcess,
