@@ -5,10 +5,10 @@ import bcrypt from "bcrypt";
 config();
 
 // const dbConfig1 = {
-//   host:  "192.168.1.250",
-//   user:  "dos",
-//   password:  "dos1234",
-//   database: "Fms1",
+//   host: process.env.DB_HOST_4,
+//   user: process.env.DB_USER_4,
+//   password: process.env.DB_PASSWORD_4,
+//   database: process.env.DB_NAME_4,
 // };
 // const dbConfig1 = {
 //   host: process.env.DB_HOST_1,
@@ -134,6 +134,13 @@ export async function createConnections() {
         ON DELETE RESTRICT ON UPDATE RESTRICT 
     );
   `);
+
+    //     SELECT d.name AS department_name, COUNT(s.student_id) AS total_students
+    // FROM Student s
+    // JOIN Enrollment e ON s.student_id = e.student_id
+    // JOIN Department d ON s.department_id = d.department_id
+    // WHERE e.semester_id = ? --Replace with selected_semester_id
+    // GROUP BY d.name;
 
     const insertQuery = `
   INSERT IGNORE INTO User (name, lastName, email, password, userType)

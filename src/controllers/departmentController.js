@@ -1,6 +1,89 @@
 import { catchAsync } from "../middlewares.js";
 import { runQuery } from "../utils/query.js";
 
+export const getDepartmentStatistics = catchAsync(async (req, res) => {
+  const { semesterId } = req.query; // Specify the semester you want to query.
+  let totalQueryResponseTime = 0;
+
+  try {
+    // Query to select all students in the current semester
+    const studentsQuery = `
+      SELECT s.student_id, s.department_id
+      FROM Student s
+      WHERE s.current_semester = ?;
+    `;
+
+    // Get all students in the current semester
+    const { res: students, resTime: t1 } = await runQuery(studentsQuery, [
+      semesterId,
+    ]);
+    console.log("students ", students);
+
+    totalQueryResponseTime += t1;
+
+    if (!students || students.length === 0) {
+      return "No students found in the current semester.";
+    }
+
+    for (const student of students) {
+      // Query to select all subjects for the student in the current semester
+      const subjectsQuery = `
+        SELECT s.subject_id, s.credit, e.grade
+        FROM Subject s
+        LEFT JOIN Enrollment e ON s.subject_id = e.subject_id
+        WHERE e.student_id = ? AND s.semester_id = ?;
+      `;
+
+      // Get all subjects for the student in the current semester
+      const { res: studentSubjects, resTime: t2 } = await runQuery(subjectsQuery, [
+        student.student_id,
+        semesterId,
+      ]);
+
+      totalQueryResponseTime += t2;
+
+      if (studentSubjects.length === 0) {
+        console.log(`No subjects found for student ID ${student.student_id}.`);
+        continue;
+      }
+
+      let totalCredits = 0;
+      let totalGrade = 0;
+
+      for (const subject of studentSubjects) {
+        totalCredits += subject.credit;
+        totalGrade += subject.grade;
+      }
+
+      const averageGrade = totalGrade / studentSubjects.length;
+      const status = averageGrade >= 55 ? 'Passed' : 'Failed';
+
+      // Update the student's status in the database
+      const updateStudentStatusQuery = `
+        UPDATE Student
+        SET status = ?
+        WHERE student_id = ?;
+      `;
+
+      const { resTime: t3 } = await runQuery(updateStudentStatusQuery, [
+        status,
+        student.student_id,
+      ]);
+
+      totalQueryResponseTime += t3;
+
+      console.log(`Student ID ${student.student_id} is ${status} with an average grade of ${averageGrade}.`);
+    }
+
+    res.json(0)
+  } catch (error) {
+    console.error("Error processing current semester students:", error);
+    return `Error processing students in the current semester for semester ID ${semesterId}: ${error.message}`;
+  }
+});
+
+
+
 
 export const getHomePageReports = async (req, res) => {
   try {
