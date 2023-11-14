@@ -279,6 +279,18 @@ export const deleteStudent = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
 let names_array = [
   "امیر",
   "محمد",
