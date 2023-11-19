@@ -316,25 +316,25 @@ export const createSemester = catchAsync(async (req, res) => {
     const semesterId = result.insertId;
 
     const semesterSubjects = subjectData[semester_number];
-    if (semesterSubjects) {
-      for (const departmentId in semesterSubjects) {
-        const subjects = semesterSubjects[departmentId];
-        for (const subject of subjects) {
-          const { name, credit } = subject;
-          const insertSubjectQuery = `
-            INSERT INTO Subject (department_id, semester_id, name, credit)
-            VALUES (?, ?, ?, ?)
-          `;
-          const { resTime: t3 } = await runQuery(insertSubjectQuery, [
-            departmentId,
-            semesterId,
-            name,
-            credit,
-          ]);
-          responseTime += t3;
-        }
-      }
-    }
+    // if (semesterSubjects) {
+    //   for (const departmentId in semesterSubjects) {
+    //     const subjects = semesterSubjects[departmentId];
+    //     for (const subject of subjects) {
+    //       const { name, credit } = subject;
+    //       const insertSubjectQuery = `
+    //         INSERT INTO Subject (department_id, semester_id, name, credit)
+    //         VALUES (?, ?, ?, ?)
+    //       `;
+    //       const { resTime: t3 } = await runQuery(insertSubjectQuery, [
+    //         departmentId,
+    //         semesterId,
+    //         name,
+    //         credit,
+    //       ]);
+    //       responseTime += t3;
+    //     }
+    //   }
+    // }
 
     console.log(`Response time : ${responseTime} ms`);
     res.status(201).json({ semesterId, message: "سمستر موفقانه اضافه شد" });
@@ -372,7 +372,7 @@ export const updateSemester = catchAsync(async (req, res) => {
       console.log(`Response time : ${resTime} ms`);
       return res.status(404).json({ error: "ترم مورد نظر یافت نشد" });
     }
-    console.log(`Response time : ${resTime} ms`);
+    console.log(`Response time : ${resTime} ms dd`);
 
     res.status(200).json({ message: "سمستر موفقانه ویرایش شد" });
   } catch (error) {
