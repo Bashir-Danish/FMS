@@ -27,14 +27,14 @@ const app = express();
 
 // app.use((req, res, next) => {
 //   req.headers.origin = req.headers.origin || req.headers.host;
-//   console.log("Received URL:", req.headers.origin + req.originalUrl); 
+//   console.log("Received URL:", req.headers.origin + req.originalUrl);
 //   next();
 // });
 
 createConnections();
 
 // const whitelist = [/^http:\/\/(app|api)\.kdanish\.com$/, /^http:\/\/localhost:5173$/];
-// const whitelist = ['*']; 
+// const whitelist = ['*'];
 // const corsOptions = {
 //   origin: function (origin, callback) {
 //     if (!origin) {
@@ -61,26 +61,26 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.use((req, res, next) => {
-//   req.connect = getConnectionPool();
-//   req.connNum = req.connect === connectionPool1 ? 1 : 2;
-//   console.log(`Request received with connection number: ${req.connNum}`);
-//   next();
-// });
+app.use((req, res, next) => {
+  req.connect = connectionPool1;
+  // req.connNum = req.connect === connectionPool1 ? 1 : 2;
+  // console.log(`Request received with connection number: ${req.connNum}`);
+  // next();
+});
 
 app.use(fileUpload());
 app.use(cookieParser());
 
-
-app.use('/uploads', express.static(path.join(path.dirname(""), "./src/uploads/")));
-
+app.use(
+  "/uploads",
+  express.static(path.join(path.dirname(""), "./src/uploads/"))
+);
 
 app.get("/", (req, res) => {
   res.json({
     message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
   });
 });
-
 
 function generateUniqueFilename() {
   const timestamp = new Date().getTime();
