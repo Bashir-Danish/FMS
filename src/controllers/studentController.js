@@ -616,8 +616,8 @@ export const seedStudent = async (req, res) => {
     ]);
 
     try {
-      await runQuery(insertQuery, [valuesToInsert]);
-      // await conn.query(insertQuery, [valuesToInsert]);
+      // await runQuery(insertQuery, [valuesToInsert]);
+      await conn.query(insertQuery, [valuesToInsert]);
       console.log(
         `Inserted ${numberOfStudents} students into Department ${departmentId}`
       );
