@@ -65,7 +65,7 @@ app.use((req, res, next) => {
   req.connect = connectionPool1;
   // req.connNum = req.connect === connectionPool1 ? 1 : 2;
   // console.log(`Request received with connection number: ${req.connNum}`);
-  // next();
+  next();
 });
 
 app.use(fileUpload());

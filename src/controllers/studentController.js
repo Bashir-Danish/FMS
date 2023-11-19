@@ -279,6 +279,18 @@ export const deleteStudent = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
 let names_array = [
   "امیر",
   "محمد",
@@ -539,15 +551,17 @@ let father_names = [
   "بهمن",
 ];
 
+
 export const seedStudent = async (req, res) => {
-  const { ssid, yearNum } = req.params;
+  const { ssid,yearNum } = req.params;
   const departmentIds = [1, 2, 3];
   let year = yearNum;
-
+  
   const conn = req.connect;
   // year += 1;
   let startingSsid = ssid;
 
+  
   const folderPath = "./src/uploads/images";
   const sourceImageFolder = path.resolve(folderPath);
   const imageFiles = fs.readdirSync(sourceImageFolder);
@@ -616,7 +630,6 @@ export const seedStudent = async (req, res) => {
     ]);
 
     try {
-      // await runQuery(insertQuery, [valuesToInsert]);
       await conn.query(insertQuery, [valuesToInsert]);
       console.log(
         `Inserted ${numberOfStudents} students into Department ${departmentId}`
