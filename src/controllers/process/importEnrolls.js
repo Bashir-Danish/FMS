@@ -5,30 +5,30 @@ export let connectionPool2;
 export let currentConnectionPool;
 import { Worker, parentPort, workerData } from "worker_threads";
 
-// const dbConfig1 = {
-//   host: process.env.DB_HOST_1,
-//   user: process.env.DB_USER_1,
-//   password: process.env.DB_PASSWORD_1,
-//   database: process.env.DB_NAME_1,
-// };
-// const dbConfig1 = {
-//   host: process.env.DB_HOST_2,
-//   user: process.env.DB_USER_2,
-//   password: process.env.DB_PASSWORD_2,
-//   database: process.env.DB_NAME_2,
-// };
-
 const dbConfig1 = {
-  host: process.env.DB_HOST_3,
-  user: process.env.DB_USER_3,
-  password: process.env.DB_PASSWORD_3,
-  database: process.env.DB_NAME_3,
+  host: process.env.DB_HOST_1,
+  user: process.env.DB_USER_1,
+  password: process.env.DB_PASSWORD_1,
+  database: process.env.DB_NAME_1,
 };
+const dbConfig2 = {
+  host: process.env.DB_HOST_2,
+  user: process.env.DB_USER_2,
+  password: process.env.DB_PASSWORD_2,
+  database: process.env.DB_NAME_2,
+};
+
+// const dbConfig1 = {
+//   host: process.env.DB_HOST_3,
+//   user: process.env.DB_USER_3,
+//   password: process.env.DB_PASSWORD_3,
+//   database: process.env.DB_NAME_3,
+// };
 
 export async function createConnections() {
   try {
-    currentConnectionPool = await createConnection(dbConfig1);
-    // connectionPool1 = await createConnectionPool(dbConfig2);
+    connectionPool1 = await createConnection(dbConfig1);
+    connectionPool2 = await createConnection(dbConfig2);
   } catch {}
 }
 export function getConnectionPool() {
