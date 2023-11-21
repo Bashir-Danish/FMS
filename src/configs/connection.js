@@ -40,7 +40,7 @@ export let currentConnectionPool;
 
 export async function createConnections() {
   try {
-    connectionPool1 = await createConnectionPool(dbConfig1);
+    // connectionPool1 = await createConnectionPool(dbConfig1);
 
     connectionPool2 = await createConnectionPool(dbConfig2);
 

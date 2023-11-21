@@ -37,6 +37,12 @@ export async function createConnections() {
     connectionPool2 = await createConnection(dbConfig2);
   } catch { }
 }
+
+/**
+ * Retrieves the connection pool.
+ *
+ * @return {Object} The current connection pool.
+ */
 export function getConnectionPool() {
   // currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
   return currentConnectionPool;
@@ -45,74 +51,94 @@ export function getConnectionPool() {
 let totalQueryResponseTime = 0;
 let queryCount = 0;
 
-// const runQuery = async (query, params = []) => {
-//   let conn = getConnectionPool();
-//   try {
-//     if (!conn) {
-//       throw new Error("Database connection is undefined.");
-//     }
-//     const startTime = Date.now();
-//     const [result] = await conn.query(query, params);
-
-//     if (result === undefined) {
-//       throw new Error("Query result is undefined");
-//     }
-//     const endTime = Date.now();
-//     const queryResponseTime = endTime - startTime;
-
-//     // console.log(`Query executed in ${queryResponseTime} ms`);
-//     return {
-//       res: result,
-//       resTime: queryResponseTime,
-//     };
-//   } catch (error) {
-//     console.error("Error running query:", error);
-//     throw error;
-//   }
-// };
-
-
-
-function isWriteOperation(query) {
-  const firstWord = query.trim().split(" ")[0].toUpperCase();
-  return ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"].includes(
-    firstWord
-  );
-}
-export const runQuery = async (query, params = []) => {
-  const isWriteOp = isWriteOperation(query);
-  let conn = isWriteOp ? connectionPool1 : connectionPool2;
-
+const runQuery = async (query, params = []) => {
+  let conn = getConnectionPool();
   try {
-    if (!conn || !conn.connection || conn.connection._closing) {
-      console.info("Connection is in a closed state, getting a new connection");
-      await createConnections();
-      conn = isWriteOp ? connectionPool1 : connectionPool2;
+    if (!conn) {
+      throw new Error("Database connection is undefined.");
     }
-
     const startTime = Date.now();
-    const [res] = await conn.query(query, params);
-    if (res === undefined) {
+    const [result] = await conn.query(query, params);
+
+    if (result === undefined) {
       throw new Error("Query result is undefined");
     }
     const endTime = Date.now();
     const queryResponseTime = endTime - startTime;
 
-    const connectionType = isWriteOp ? "Master" : "Slave";
-    console.log(
-      `Query executed in ${queryResponseTime} ms using ${connectionType} connection`
-    );
-
+    // console.log(`Query executed in ${queryResponseTime} ms`);
     return {
-      res,
+      res: result,
       resTime: queryResponseTime,
-      connectionType,
     };
   } catch (error) {
     console.error("Error running query:", error);
     throw error;
   }
 };
+
+
+
+/**
+ * Determines if a given query is a write operation.
+ *
+ * @param {string} query - The query to check.
+ * @return {boolean} Returns true if the query is a write operation, false otherwise.
+ */
+
+// function isWriteOperation(query) {
+//   const firstWord = query.trim().split(" ")[0].toUpperCase();
+//   return ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"].includes(
+//     firstWord
+//   );
+// }
+
+
+/**
+ * Runs a query against the database and returns the result along with information about the query execution.
+ *
+ * @param {string} query - The SQL query to be executed.
+ * @param {Array} params - Optional parameters to be used in the query.
+ * @return {Object} - An object containing the query result, response time, and connection type.
+ *                   - res: The result of the query.
+ *                   - resTime: The response time of the query execution in milliseconds.
+ *                   - connectionType: The type of connection used for the query (Master or Slave).
+ * @throws {Error} - If the query result is undefined or if an error occurs while running the query.
+ */
+// export const runQuery = async (query, params = []) => {
+//   const isWriteOp = isWriteOperation(query);
+//   let conn = isWriteOp ? connectionPool1 : connectionPool2;
+
+//   try {
+//     if (!conn || !conn.connection || conn.connection._closing) {
+//       console.info("Connection is in a closed state, getting a new connection");
+//       await createConnections();
+//       conn = isWriteOp ? connectionPool1 : connectionPool2;
+//     }
+
+//     const startTime = Date.now();
+//     const [res] = await conn.query(query, params);
+//     if (res === undefined) {
+//       throw new Error("Query result is undefined");
+//     }
+//     const endTime = Date.now();
+//     const queryResponseTime = endTime - startTime;
+
+//     const connectionType = isWriteOp ? "Master" : "Slave";
+//     console.log(
+//       `Query executed in ${queryResponseTime} ms using ${connectionType} connection`
+//     );
+
+//     return {
+//       res,
+//       resTime: queryResponseTime,
+//       connectionType,
+//     };
+//   } catch (error) {
+//     console.error("Error running query:", error);
+//     throw error;
+//   }
+// };
 
 
 
