@@ -100,7 +100,7 @@ export const runQuery = async (query, params = []) => {
 
     const connectionType = isWriteOp ? "Master" : "Slave";
     console.log(
-      `using ${connectionType} connection pool`
+      `Query executed in ${queryResponseTime} ms using ${connectionType} connection`
     );
 
     return {
