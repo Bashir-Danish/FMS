@@ -12,9 +12,9 @@ import { getConnectionPool, createConnections } from "../configs/connection.js";
 export const runQuery = async (query, params = []) => {
   let conn = getConnectionPool();
   try {
-    // if (!conn) {
-    // throw new Error("Database connection is undefined.");
-    // }
+    if (!conn) {
+    throw new Error("Database connection is undefined.");
+    }
     if (!conn || !conn.connection || conn.connection._closing) {
       console.info("Connection is in a closed state, getting a new connection");
       await createConnections();

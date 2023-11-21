@@ -172,5 +172,5 @@ export async function createConnections() {
 
 export function getConnectionPool() {
   // currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
-  return connectionPool1;
+  return connectionPool2;
 }
