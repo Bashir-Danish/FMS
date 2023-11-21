@@ -18,49 +18,91 @@ const dbConfig2 = {
   database: process.env.DB_NAME_2,
 };
 
-// const dbConfig1 = {
-//   host: process.env.DB_HOST_3,
-//   user: process.env.DB_USER_3,
-//   password: process.env.DB_PASSWORD_3,
-//   database: process.env.DB_NAME_3,
-// };
-
 export async function createConnections() {
   try {
     connectionPool1 = await createConnection(dbConfig1);
     connectionPool2 = await createConnection(dbConfig2);
   } catch {}
 }
-export function getConnectionPool() {
-  // currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
-  return currentConnectionPool;
-}
+// export function getConnectionPool() {
+//   // currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
+//   return currentConnectionPool;
+// }
 
-const runQuery = async (query, params = []) => {
-  let conn = getConnectionPool();
+// const runQuery = async (query, params = []) => {
+//   let conn = getConnectionPool();
+//   try {
+//     if (!conn) {
+//       throw new Error("Database connection is undefined.");
+//     }
+//     const startTime = Date.now();
+//     const [result] = await conn.query(query, params);
+
+//     if (result === undefined) {
+//       throw new Error("Query result is undefined");
+//     }
+//     const endTime = Date.now();
+//     const queryResponseTime = endTime - startTime;
+
+//     console.log(`Query executed in ${queryResponseTime} ms`);
+//     return {
+//       result,
+//       resTime: queryResponseTime,
+//     };
+//   } catch (error) {
+//     console.error("Error running query:", error);
+//     throw error;
+//   }
+// };
+
+
+
+function isWriteOperation(query) {
+  const firstWord = query.trim().split(" ")[0].toUpperCase();
+  return ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"].includes(
+    firstWord
+  );
+}
+export const runQuery = async (query, params = []) => {
+  const isWriteOp = isWriteOperation(query);
+  let conn = isWriteOp ? connectionPool1 : connectionPool2;
+
   try {
-    if (!conn) {
-      throw new Error("Database connection is undefined.");
+    if (!conn || !conn.connection || conn.connection._closing) {
+      console.info("Connection is in a closed state, getting a new connection");
+      await createConnections();
+      conn = isWriteOp ? connectionPool1 : connectionPool2;
     }
+
     const startTime = Date.now();
     const [result] = await conn.query(query, params);
-
     if (result === undefined) {
       throw new Error("Query result is undefined");
     }
     const endTime = Date.now();
     const queryResponseTime = endTime - startTime;
 
-    console.log(`Query executed in ${queryResponseTime} ms`);
+    const connectionType = isWriteOp ? "Master" : "Slave";
+    console.log(
+      `Query executed in ${queryResponseTime} ms using ${connectionType} connection pool`
+    );
+
     return {
       result,
       resTime: queryResponseTime,
+      connectionType,
     };
   } catch (error) {
     console.error("Error running query:", error);
     throw error;
   }
 };
+
+
+
+
+
+
 async function updateStudentGrades(enrollmentsData, semesterId, departmentId) {
   
   let responseTime = 0;
