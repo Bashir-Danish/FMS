@@ -25,10 +25,10 @@ const dbConfig1 = {
   database: process.env.DB_NAME_1,
 };
 const dbConfig2 = {
-  host: process.env.DB_HOST_2,
-  user: process.env.DB_USER_2,
-  password: process.env.DB_PASSWORD_2,
-  database: process.env.DB_NAME_2,
+  host: process.env.DB_HOST_3,
+  user: process.env.DB_USER_3,
+  password: process.env.DB_PASSWORD_3,
+  database: process.env.DB_NAME_3,
 };
 
 
@@ -59,8 +59,9 @@ let queryCount = 0;
 const runQuery = async (query, params = []) => {
   let conn = getConnectionPool();
   try {
-    if (!conn) {
-      throw new Error("Database connection is undefined.");
+    if (!conn || !conn.connection || conn.connection._closing) {
+      console.info("Connection is in a closed state, getting a new connection");
+      await createConnections();
     }
     const startTime = Date.now();
     const [result] = await conn.query(query, params);

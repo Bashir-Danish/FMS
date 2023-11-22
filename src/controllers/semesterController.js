@@ -314,6 +314,7 @@ export const createSemester = catchAsync(async (req, res) => {
     ]);
     responseTime += t2;
     const semesterId = result.insertId;
+    console.log(`semesterId: ${semesterId}`);
 
     const semesterSubjects = subjectData[semester_number];
     if (semesterSubjects) {
