@@ -169,8 +169,11 @@ export async function createConnections() {
     throw error;
   }
 }
+let connectionName = 'connectionPool1';
 
 export function getConnectionPool() {
   currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
+  connectionName = currentConnectionPool === connectionPool1 ? 'server 1' : 'server 2';
+  console.log(`Connection changed to ${connectionName}`);
   return currentConnectionPool;
 }
