@@ -63,8 +63,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   req.connect = connectionPool1;
-  // req.connNum = req.connect === connectionPool1 ? 1 : 2;
-  // console.log(`Request received with connection number: ${req.connNum}`);
+  req.connNum = req.connect === connectionPool1 ? 1 : 2;
+  console.log(`Request received with connection number: ${req.connNum}`);
   next();
 });
 
@@ -116,9 +116,8 @@ app.post("/api/v1/upload", async (req, res) => {
 
   try {
     if (id) {
-      const query = `SELECT picture FROM ${
-        fileType === "user" ? "User" : "Student"
-      } WHERE ${fileType === "user" ? "user_id" : "student_id"} = ?`;
+      const query = `SELECT picture FROM ${fileType === "user" ? "User" : "Student"
+        } WHERE ${fileType === "user" ? "user_id" : "student_id"} = ?`;
       const [rows] = await req.connect.query(query, [id]);
 
       if (rows && rows.length > 0) {
@@ -139,11 +138,9 @@ app.post("/api/v1/upload", async (req, res) => {
     }
 
     imagePath = `/uploads/${folder}/${uniqueFilename}.${ext}`;
-    const updateQuery = `UPDATE ${
-      fileType === "user" ? "User" : "Student"
-    } SET picture = ? WHERE ${
-      fileType === "user" ? "user_id" : "student_id"
-    } = ?`;
+    const updateQuery = `UPDATE ${fileType === "user" ? "User" : "Student"
+      } SET picture = ? WHERE ${fileType === "user" ? "user_id" : "student_id"
+      } = ?`;
     await req.connect.query(updateQuery, [imagePath, id]);
 
     const filePath = path.resolve(
