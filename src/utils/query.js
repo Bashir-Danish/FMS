@@ -1,7 +1,6 @@
 import { getConnectionPool, createConnections } from "../configs/connection.js";
 
 
-
 /**
  * Runs a database query asynchronously.
  *
