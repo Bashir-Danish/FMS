@@ -317,25 +317,32 @@ export const createSemester = catchAsync(async (req, res) => {
     console.log(`semesterId: ${semesterId}`);
 
     const semesterSubjects = subjectData[semester_number];
-    if (semesterSubjects) {
-      for (const departmentId in semesterSubjects) {
-        const subjects = semesterSubjects[departmentId];
-        for (const subject of subjects) {
-          const { name, credit } = subject;
-          const insertSubjectQuery = `
+    setTimeout(async () => {
+      const checkSemesterIdQuery = "SELECT semester_id FROM Semester WHERE semester_id = ?";
+      const { result: semesterRows } = await runQuery(checkSemesterIdQuery, [semesterId]);
+      if (semesterRows.length > 0) {
+        if (semesterSubjects) {
+          for (const departmentId in semesterSubjects) {
+            const subjects = semesterSubjects[departmentId];
+            for (const subject of subjects) {
+              const { name, credit } = subject;
+              const insertSubjectQuery = `
             INSERT INTO Subject (department_id, semester_id, name, credit)
             VALUES (?, ?, ?, ?)
           `;
-          const { resTime: t3 } = await runQuery(insertSubjectQuery, [
-            departmentId,
-            semesterId,
-            name,
-            credit,
-          ]);
-          responseTime += t3;
+              const { resTime: t3 } = await runQuery(insertSubjectQuery, [
+                departmentId,
+                semesterId,
+                name,
+                credit,
+              ]);
+              responseTime += t3;
+            }
+          }
         }
       }
-    }
+    }, 3000);
+
 
     console.log(`Response time : ${responseTime} ms`);
     res.status(201).json({ semesterId, message: "سمستر موفقانه اضافه شد" });
