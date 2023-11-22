@@ -24,6 +24,8 @@ export async function createConnections() {
     connectionPool2 = await createConnection(dbConfig2);
   } catch { }
 }
+let connectionName = 'server 1';
+
 export function getConnectionPool() {
   currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
   connectionName = currentConnectionPool === connectionPool1 ? 'server 1' : 'server 2';

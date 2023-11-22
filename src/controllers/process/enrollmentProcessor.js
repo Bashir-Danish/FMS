@@ -45,10 +45,11 @@ export async function createConnections() {
  *
  * @return {Object} The current connection pool.
  */
+let connectionName = 'server 1';
+
 export function getConnectionPool() {
   currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
   connectionName = currentConnectionPool === connectionPool1 ? 'server 1' : 'server 2';
-  console.log(`Connection changed to ${connectionName}`);
   return currentConnectionPool;
 }
 
@@ -159,7 +160,7 @@ async function enrollStudents(semesterId) {
     totalQueryResponseTime += t1;
     queryCount++;
     console.log(
-      `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+      `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
     );
 
     if (!semesters || semesters.length === 0) {
@@ -185,7 +186,7 @@ async function enrollStudents(semesterId) {
       totalQueryResponseTime += t2;
       queryCount++;
       console.log(
-        `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+        `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
       );
       console.log(eligibleStudents);
       if (eligibleStudents.length === 0) {
@@ -218,7 +219,7 @@ async function enrollStudents(semesterId) {
         totalQueryResponseTime += t5;
         queryCount++;
         console.log(
-          `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+          `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
         );
 
         const totalCredits = currentSemesterSubjects.reduce(
@@ -246,7 +247,7 @@ async function enrollStudents(semesterId) {
           totalQueryResponseTime += t6;
           queryCount++;
           console.log(
-            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
           );
 
           console.log(`Enrolling student ID ${student.student_id} graduated`);
@@ -302,7 +303,7 @@ async function enrollStudents(semesterId) {
     totalQueryResponseTime += t7;
     queryCount++;
     console.log(
-      `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+      `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
     );
 
     if (eligibleStudents.length === 0) {
@@ -346,7 +347,7 @@ async function enrollStudents(semesterId) {
         totalQueryResponseTime += t8;
         queryCount++;
         console.log(
-          `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+          `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
         );
 
         for (const subject of studentSubjects) {
@@ -378,7 +379,7 @@ async function enrollStudents(semesterId) {
           totalQueryResponseTime += t9;
           queryCount++;
           console.log(
-            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
           );
         }
         // return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
@@ -397,7 +398,7 @@ async function enrollStudents(semesterId) {
           totalQueryResponseTime += t10;
           queryCount++;
           console.log(
-            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
           );
 
           for (const subject of studentSubjects) {
@@ -430,7 +431,7 @@ async function enrollStudents(semesterId) {
             totalQueryResponseTime += t11;
             queryCount++;
             console.log(
-              `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+              `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
             );
           }
           // return `تغیرات روی سمستر ${semester.semester_number} ${semester.year} اعمال شد`;
@@ -458,7 +459,7 @@ async function enrollStudents(semesterId) {
           totalQueryResponseTime += t12;
           queryCount++;
           console.log(
-            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+            `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
           );
 
           // console.log(currentSemesterSubjects);
@@ -488,7 +489,7 @@ async function enrollStudents(semesterId) {
             totalQueryResponseTime += t13;
             queryCount++;
             console.log(
-              `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+              `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
             );
 
             if (currentSemesterSubjects.length === 0) {
@@ -526,7 +527,7 @@ async function enrollStudents(semesterId) {
               totalQueryResponseTime += t14;
               queryCount++;
               console.log(
-                `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+                `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
               );
             }
 
@@ -542,7 +543,7 @@ async function enrollStudents(semesterId) {
             totalQueryResponseTime += t15;
             queryCount++;
             console.log(
-              `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms`
+              `Queries : ${queryCount}, Response Time: ${totalQueryResponseTime} ms on ${connectionName}`
             );
             console.log(
               `Enrolling student ID ${student.student_id} to the next semester`
