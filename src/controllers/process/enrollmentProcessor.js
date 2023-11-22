@@ -31,6 +31,8 @@ const dbConfig2 = {
   database: process.env.DB_NAME_2,
 };
 
+
+
 export async function createConnections() {
   try {
     connectionPool1 = await createConnection(dbConfig1);
@@ -44,7 +46,9 @@ export async function createConnections() {
  * @return {Object} The current connection pool.
  */
 export function getConnectionPool() {
-  // currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
+  currentConnectionPool = currentConnectionPool === connectionPool1 ? connectionPool2 : connectionPool1;
+  connectionName = currentConnectionPool === connectionPool1 ? 'server 1' : 'server 2';
+  console.log(`Connection changed to ${connectionName}`);
   return currentConnectionPool;
 }
 
