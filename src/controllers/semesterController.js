@@ -306,7 +306,7 @@ export const createSemester = catchAsync(async (req, res) => {
     }
 
     const query =
-      "INSERT INTO Semester (name, year, semester_number) VALUES (?, ?, ?)";
+      "INSERT IGNORE  INTO Semester (name, year, semester_number) VALUES (?, ?, ?)";
     const { result, resTime: t2 } = await runQuery(query, [
       name,
       year,
@@ -327,7 +327,7 @@ export const createSemester = catchAsync(async (req, res) => {
             for (const subject of subjects) {
               const { name, credit } = subject;
               const insertSubjectQuery = `
-            INSERT INTO Subject (department_id, semester_id, name, credit)
+            INSERT IGNORE INTO Subject (department_id, semester_id, name, credit)
             VALUES (?, ?, ?, ?)
           `;
               const { resTime: t3 } = await runQuery(insertSubjectQuery, [
