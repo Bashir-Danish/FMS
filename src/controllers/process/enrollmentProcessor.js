@@ -72,7 +72,7 @@ const runQuery = async (query, params = []) => {
     const endTime = Date.now();
     const queryResponseTime = endTime - startTime;
 
-    // console.log(`Query executed in ${queryResponseTime} ms`);
+    console.log(`Query executed in ${queryResponseTime} ms`);
     return {
       res: result,
       resTime: queryResponseTime,
