@@ -553,204 +553,204 @@ let father_names = [
 ];
 
 
-export const seedStudent = async (req, res) => {
-  let conn = connectionPool1;
-  const { ssid, yearNum } = req.params;
-  const departmentIds = [1, 2, 3];
-  let year = yearNum;
-
-  // year += 1;
-  let startingSsid = ssid;
-
-  const folderPath = "./src/uploads/images";
-  const sourceImageFolder = path.resolve(folderPath);
-  const imageFiles = fs.readdirSync(sourceImageFolder);
-
-  try {
-    // Start a transaction
-    await conn.query('START TRANSACTION;');
-
-    for (const departmentId of departmentIds) {
-      const students = [];
-      const numberOfStudents = Math.floor(Math.random() * (41 - 35) + 35);
-
-      const usedNames = new Set();
-
-      for (let i = 0; i < numberOfStudents; i++) {
-        let name;
-        do {
-          name = names_array[Math.floor(Math.random() * names_array.length)];
-        } while (usedNames.has(name));
-
-        let fname;
-        do {
-          fname = father_names[Math.floor(Math.random() * father_names.length)];
-        } while (usedNames.has(fname));
-
-        usedNames.add(name);
-        usedNames.add(fname);
-
-        const currentSsid = startingSsid++;
-
-        const randomImage =
-          imageFiles[Math.floor(Math.random() * imageFiles.length)];
-        const imagePath = `/uploads/students/${currentSsid}.jpg`;
-
-        const sourceImagePath = path.join(sourceImageFolder, randomImage);
-        const targetImagePath = path.join(
-          path.dirname(""),
-          `./src/uploads/students/${currentSsid}.jpg`
-        );
-        fs.copyFileSync(sourceImagePath, targetImagePath);
-
-        const picture = imagePath;
-        const currentSemester = 1;
-
-        const student = [
-          name,
-          fname,
-          currentSsid,
-          departmentId,
-          currentSemester,
-          picture,
-          year,
-        ];
-        students.push(student);
-      }
-
-      const insertQuery = `
-        INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture, year)
-        VALUES ?;
-      `;
-
-      const valuesToInsert = students.map((student) => [
-        student[0],
-        student[1],
-        student[2],
-        student[3],
-        student[4],
-        student[5],
-        student[6],
-      ]);
-
-      try {
-        await conn.query(insertQuery, [valuesToInsert]);
-        console.log(
-          `Inserted ${numberOfStudents} students into Department ${departmentId}`
-        );
-      } catch (error) {
-        console.error(
-          `Error inserting students into Department ${departmentId}:`,
-          error
-        );
-        // Rollback the transaction on error
-        await conn.query('ROLLBACK;');
-        return res.status(500).json({ error: "Internal server error" });
-      }
-    }
-
-    // Commit the transaction
-    await conn.query('COMMIT;');
-    res.status(200).json({ message: "Students seeded successfully" });
-  } catch (error) {
-    // Rollback the transaction on error
-    await conn.query('ROLLBACK;');
-    console.error("Error seeding students:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-
 // export const seedStudent = async (req, res) => {
 //   let conn = connectionPool1;
-//   const { ssid,yearNum } = req.params;
+//   const { ssid, yearNum } = req.params;
 //   const departmentIds = [1, 2, 3];
 //   let year = yearNum;
-  
+
 //   // year += 1;
 //   let startingSsid = ssid;
 
-  
 //   const folderPath = "./src/uploads/images";
 //   const sourceImageFolder = path.resolve(folderPath);
 //   const imageFiles = fs.readdirSync(sourceImageFolder);
 
-//   for (const departmentId of departmentIds) {
-//     const students = [];
-//     const numberOfStudents = Math.floor(Math.random() * (41 - 35) + 35);
+//   try {
+//     // Start a transaction
+//     // await conn.query('START TRANSACTION;');
 
-//     const usedNames = new Set();
+//     for (const departmentId of departmentIds) {
+//       const students = [];
+//       const numberOfStudents = Math.floor(Math.random() * (41 - 35) + 35);
 
-//     for (let i = 0; i < numberOfStudents; i++) {
-//       let name;
-//       do {
-//         name = names_array[Math.floor(Math.random() * names_array.length)];
-//       } while (usedNames.has(name));
+//       const usedNames = new Set();
 
-//       let fname;
-//       do {
-//         fname = father_names[Math.floor(Math.random() * father_names.length)];
-//       } while (usedNames.has(fname));
+//       for (let i = 0; i < numberOfStudents; i++) {
+//         let name;
+//         do {
+//           name = names_array[Math.floor(Math.random() * names_array.length)];
+//         } while (usedNames.has(name));
 
-//       usedNames.add(name);
-//       usedNames.add(fname);
+//         let fname;
+//         do {
+//           fname = father_names[Math.floor(Math.random() * father_names.length)];
+//         } while (usedNames.has(fname));
 
-//       const ssid = startingSsid++;
+//         usedNames.add(name);
+//         usedNames.add(fname);
 
-//       const randomImage =
-//         imageFiles[Math.floor(Math.random() * imageFiles.length)];
-//       const imagePath = `/uploads/students/${ssid}.jpg`;
+//         const currentSsid = startingSsid++;
 
-//       const sourceImagePath = path.join(sourceImageFolder, randomImage);
-//       const targetImagePath = path.join(
-//         path.dirname(""),
-//         `./src/uploads/students/${ssid}.jpg`
-//       );
-//       fs.copyFileSync(sourceImagePath, targetImagePath);
+//         const randomImage =
+//           imageFiles[Math.floor(Math.random() * imageFiles.length)];
+//         const imagePath = `/uploads/students/${currentSsid}.jpg`;
 
-//       const picture = imagePath;
-//       const currentSemester = 1;
+//         const sourceImagePath = path.join(sourceImageFolder, randomImage);
+//         const targetImagePath = path.join(
+//           path.dirname(""),
+//           `./src/uploads/students/${currentSsid}.jpg`
+//         );
+//         fs.copyFileSync(sourceImagePath, targetImagePath);
 
-//       const student = [
-//         name,
-//         fname,
-//         ssid,
-//         departmentId,
-//         currentSemester,
-//         picture,
-//         year,
-//       ];
-//       students.push(student);
+//         const picture = imagePath;
+//         const currentSemester = 1;
+
+//         const student = [
+//           name,
+//           fname,
+//           currentSsid,
+//           departmentId,
+//           currentSemester,
+//           picture,
+//           year,
+//         ];
+//         students.push(student);
+//       }
+
+//       const insertQuery = `
+//         INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture, year)
+//         VALUES ?;
+//       `;
+
+//       const valuesToInsert = students.map((student) => [
+//         student[0],
+//         student[1],
+//         student[2],
+//         student[3],
+//         student[4],
+//         student[5],
+//         student[6],
+//       ]);
+
+//       try {
+//         await conn.query(insertQuery, [valuesToInsert]);
+//         console.log(
+//           `Inserted ${numberOfStudents} students into Department ${departmentId}`
+//         );
+//       } catch (error) {
+//         console.error(
+//           `Error inserting students into Department ${departmentId}:`,
+//           error
+//         );
+//         // Rollback the transaction on error
+//         await conn.query('ROLLBACK;');
+//         return res.status(500).json({ error: "Internal server error" });
+//       }
 //     }
 
-//     const insertQuery = `
-//       INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture, year)
-//       VALUES ?;
-//     `;
-
-//     const valuesToInsert = students.map((student) => [
-//       student[0],
-//       student[1],
-//       student[2],
-//       student[3],
-//       student[4],
-//       student[5],
-//       student[6],
-//     ]);
-
-//     try {
-//       await conn.query(insertQuery, [valuesToInsert]);
-//       console.log(
-//         `Inserted ${numberOfStudents} students into Department ${departmentId}`
-//       );
-//     } catch (error) {
-//       console.error(
-//         `Error inserting students into Department ${departmentId}:`,
-//         error
-//       );
-//     }
+//     // Commit the transaction
+//     await conn.query('COMMIT;');
+//     res.status(200).json({ message: "Students seeded successfully" });
+//   } catch (error) {
+//     // Rollback the transaction on error
+//     await conn.query('ROLLBACK;');
+//     console.error("Error seeding students:", error);
+//     res.status(500).json({ error: "Internal server error" });
 //   }
 // };
+
+
+export const seedStudent = async (req, res) => {
+  let conn = connectionPool1;
+  const { ssid,yearNum } = req.params;
+  const departmentIds = [1, 2, 3];
+  let year = yearNum;
+  
+  // year += 1;
+  let startingSsid = ssid;
+
+  
+  const folderPath = "./src/uploads/images";
+  const sourceImageFolder = path.resolve(folderPath);
+  const imageFiles = fs.readdirSync(sourceImageFolder);
+
+  for (const departmentId of departmentIds) {
+    const students = [];
+    const numberOfStudents = Math.floor(Math.random() * (41 - 35) + 35);
+
+    const usedNames = new Set();
+
+    for (let i = 0; i < numberOfStudents; i++) {
+      let name;
+      do {
+        name = names_array[Math.floor(Math.random() * names_array.length)];
+      } while (usedNames.has(name));
+
+      let fname;
+      do {
+        fname = father_names[Math.floor(Math.random() * father_names.length)];
+      } while (usedNames.has(fname));
+
+      usedNames.add(name);
+      usedNames.add(fname);
+
+      const ssid = startingSsid++;
+
+      const randomImage =
+        imageFiles[Math.floor(Math.random() * imageFiles.length)];
+      const imagePath = `/uploads/students/${ssid}.jpg`;
+
+      const sourceImagePath = path.join(sourceImageFolder, randomImage);
+      const targetImagePath = path.join(
+        path.dirname(""),
+        `./src/uploads/students/${ssid}.jpg`
+      );
+      fs.copyFileSync(sourceImagePath, targetImagePath);
+
+      const picture = imagePath;
+      const currentSemester = 1;
+
+      const student = [
+        name,
+        fname,
+        ssid,
+        departmentId,
+        currentSemester,
+        picture,
+        year,
+      ];
+      students.push(student);
+    }
+
+    const insertQuery = `
+      INSERT INTO Student (name, fname, ssid, department_id, current_semester, picture, year)
+      VALUES ?;
+    `;
+
+    const valuesToInsert = students.map((student) => [
+      student[0],
+      student[1],
+      student[2],
+      student[3],
+      student[4],
+      student[5],
+      student[6],
+    ]);
+
+    try {
+      await conn.query(insertQuery, [valuesToInsert]);
+      console.log(
+        `Inserted ${numberOfStudents} students into Department ${departmentId}`
+      );
+    } catch (error) {
+      console.error(
+        `Error inserting students into Department ${departmentId}:`,
+        error
+      );
+    }
+  }
+};
 
 // import path from "path";
 // import fs from "fs";
