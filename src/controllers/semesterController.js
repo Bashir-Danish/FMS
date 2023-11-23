@@ -1,6 +1,8 @@
 import { Worker } from "worker_threads";
 import { catchAsync } from "../middlewares.js";
 import { runQuery } from "../utils/query.js";
+import { connectionPool1 } from "../configs/connection.js";
+
 export const processEnrollment = catchAsync(async (req, res) => {
   try {
     const semesterIdsToProcess = req.body.semesterIdsToProcess;
@@ -288,38 +290,112 @@ const subjectData = {
   },
 };
 
+// export const createSemester = catchAsync(async (req, res) => {
+//   let conn = connectionPool1;
+//   const { name, year, semester_number } = req.body;
+//   let responseTime = 0;
+
+//   try {
+//     // Start a transaction
+//     await runQuery('START TRANSACTION;');
+
+//     const queryCheck =
+//       "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
+//     const { result: rows, resTime: t1 } = await runQuery(queryCheck, [
+//       name,
+//       year,
+//       semester_number,
+//     ]);
+//     responseTime += t1;
+
+//     if (rows.length > 0) {
+//       console.log(`Response time : ${responseTime} ms`);
+//       return res.status(409).json({ error: "این ترم از قبل وجود دارد" });
+//     }
+
+//     const query =
+//       "INSERT IGNORE INTO Semester (name, year, semester_number) VALUES (?, ?, ?)";
+//     const { result, resTime: t2 } = await runQuery(query, [
+//       name,
+//       year,
+//       semester_number,
+//     ]);
+//     responseTime += t2;
+//     const semesterId = result.insertId;
+//     console.log(`semesterId: ${semesterId}`);
+
+//     const semesterSubjects = subjectData[semester_number];
+//     setTimeout(async () => {
+//       const checkSemesterIdQuery = "SELECT semester_id FROM Semester WHERE semester_id = ?";
+//       const { result: semesterRows } = await runQuery(checkSemesterIdQuery, [semesterId]);
+
+//       if (semesterRows.length > 0) {
+//         if (semesterSubjects) {
+//           for (const departmentId in semesterSubjects) {
+//             const subjects = semesterSubjects[departmentId];
+//             for (const subject of subjects) {
+//               const { name, credit } = subject;
+//               const insertSubjectQuery = `
+//                 INSERT IGNORE INTO Subject (department_id, semester_id, name, credit)
+//                 VALUES (?, ?, ?, ?)
+//               `;
+//               const { resTime: t3 } = await runQuery(insertSubjectQuery, [
+//                 departmentId,
+//                 semesterId,
+//                 name,
+//                 credit,
+//               ]);
+//               responseTime += t3;
+//             }
+//           }
+//         }
+//       }
+//     }, 3000);
+
+//     // Commit the transaction
+//     await runQuery('COMMIT;');
+
+//     console.log(`Response time : ${responseTime} ms`);
+//     res.status(201).json({ semesterId, message: "سمستر موفقانه اضافه شد" });
+//   } catch (error) {
+//     // Rollback the transaction on error
+//     await runQuery('ROLLBACK;');
+//     console.error("Error creating semester:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
 export const createSemester = catchAsync(async (req, res) => {
+  let conn = connectionPool1;
   const { name, year, semester_number } = req.body;
   let responseTime = 0;
+
   try {
+    // Start a transaction
+    await conn.query('START TRANSACTION;');
+
     const queryCheck =
       "SELECT semester_id FROM Semester WHERE name = ? AND year = ? AND semester_number = ?";
-    const { result: rows, resTime: t1 } = await runQuery(queryCheck, [
-      name,
-      year,
-      semester_number,
-    ]);
-    responseTime += t1;
+    const [rows] = await conn.query(queryCheck, [name, year, semester_number]);
+    responseTime += 0;
+
     if (rows.length > 0) {
       console.log(`Response time : ${responseTime} ms`);
       return res.status(409).json({ error: "این ترم از قبل وجود دارد" });
     }
 
     const query =
-      "INSERT IGNORE  INTO Semester (name, year, semester_number) VALUES (?, ?, ?)";
-    const { result, resTime: t2 } = await runQuery(query, [
-      name,
-      year,
-      semester_number,
-    ]);
-    responseTime += t2;
+      "INSERT IGNORE INTO Semester (name, year, semester_number) VALUES (?, ?, ?)";
+    const [result] = await conn.query(query, [name, year, semester_number]);
+
     const semesterId = result.insertId;
     console.log(`semesterId: ${semesterId}`);
 
     const semesterSubjects = subjectData[semester_number];
     setTimeout(async () => {
       const checkSemesterIdQuery = "SELECT semester_id FROM Semester WHERE semester_id = ?";
-      const { result: semesterRows } = await runQuery(checkSemesterIdQuery, [semesterId]);
+      const [semesterRows] = await conn.query(checkSemesterIdQuery, [semesterId]);
+
       if (semesterRows.length > 0) {
         if (semesterSubjects) {
           for (const departmentId in semesterSubjects) {
@@ -327,30 +403,33 @@ export const createSemester = catchAsync(async (req, res) => {
             for (const subject of subjects) {
               const { name, credit } = subject;
               const insertSubjectQuery = `
-            INSERT IGNORE INTO Subject (department_id, semester_id, name, credit)
-            VALUES (?, ?, ?, ?)
-          `;
-              const { resTime: t3 } = await runQuery(insertSubjectQuery, [
+                INSERT IGNORE INTO Subject (department_id, semester_id, name, credit)
+                VALUES (?, ?, ?, ?)
+              `;
+              await conn.query(insertSubjectQuery, [
                 departmentId,
                 semesterId,
                 name,
                 credit,
               ]);
-              responseTime += t3;
             }
           }
         }
       }
     }, 3000);
 
+    // Commit the transaction
+    await conn.query('COMMIT;');
 
     console.log(`Response time : ${responseTime} ms`);
     res.status(201).json({ semesterId, message: "سمستر موفقانه اضافه شد" });
   } catch (error) {
+    await conn.query('ROLLBACK;');
     console.error("Error creating semester:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 export const updateSemester = catchAsync(async (req, res) => {
   const { id } = req.params;
